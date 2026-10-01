@@ -1,0 +1,187 @@
+{
+  "name": "SmartLar — 3. Faturamento ao concluir",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smartlar-pedido-concluido",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "c1b2c3d4-3333-4333-8333-333333333301",
+      "name": "Webhook Supabase",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "smartlar-pedido-concluido"
+    },
+    {
+      "parameters": {
+        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst WEBHOOK_DESTINO = 'https://webhook.site/COLE-SEU-UUID';\n\nconst raw = $input.first().json;\nconst body = raw.body && typeof raw.body === 'object' ? raw.body : raw;\nconst atual = body.record || {};\nconst anterior = body.old_record || {};\n\nif (body.type !== 'UPDATE' || atual.status !== 'concluido' || anterior.status === 'concluido' || !atual.id) {\n  return [];\n}\n\nreturn [{\n  json: {\n    pedido_id: atual.id,\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    webhook_destino: WEBHOOK_DESTINO,\n  },\n}];"
+      },
+      "id": "c1b2c3d4-3333-4333-8333-333333333302",
+      "name": "Filtrar concluido",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Filtrar concluido').first().json.supabase_url }}/rest/v1/pedidos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $('Filtrar concluido').first().json.pedido_id }}"
+            },
+            {
+              "name": "select",
+              "value": "id,numero,valor_total,concluido_em,updated_at,forma_pagamento,clientes(nome)"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Filtrar concluido').first().json.service_role }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Filtrar concluido').first().json.service_role }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c1b2c3d4-3333-4333-8333-333333333303",
+      "name": "Buscar pedido",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 300],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json;\nconst lista = Array.isArray(payload) ? payload : [payload];\nconst pedido = lista[0];\nif (!pedido || !pedido.id) {\n  throw new Error('Pedido concluído não encontrado para registrar o faturamento.');\n}\nconst cliente = pedido.clientes && pedido.clientes.nome ? pedido.clientes.nome : 'Cliente não identificado';\nreturn [{\n  json: {\n    evento: 'faturamento',\n    data: pedido.concluido_em || pedido.updated_at,\n    cliente,\n    valor: pedido.valor_total,\n    forma_pagamento: pedido.forma_pagamento,\n    pedido_id: pedido.id,\n    numero: pedido.numero,\n  },\n}];"
+      },
+      "id": "c1b2c3d4-3333-4333-8333-333333333304",
+      "name": "Montar faturamento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Filtrar concluido').first().json.webhook_destino }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "c1b2c3d4-3333-4333-8333-333333333305",
+      "name": "Enviar destino",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 220],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 3 falhou ao registrar o faturamento: ' + mensagem);"
+      },
+      "id": "c1b2c3d4-3333-4333-8333-333333333306",
+      "name": "Registrar falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 420]
+    }
+  ],
+  "connections": {
+    "Webhook Supabase": {
+      "main": [
+        [
+          {
+            "node": "Filtrar concluido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar concluido": {
+      "main": [
+        [
+          {
+            "node": "Buscar pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar pedido": {
+      "main": [
+        [
+          {
+            "node": "Montar faturamento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar faturamento": {
+      "main": [
+        [
+          {
+            "node": "Enviar destino",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar destino": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Registrar falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

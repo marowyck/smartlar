@@ -1,0 +1,184 @@
+{
+  "name": "SmartLar — 2. Instalações de amanhã",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "b1b2c3d4-2222-4222-8222-222222222201",
+      "name": "Todo dia as 8h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst WEBHOOK_DESTINO = 'https://webhook.site/COLE-SEU-UUID';\n\nreturn [{\n  json: {\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    webhook_destino: WEBHOOK_DESTINO,\n  },\n}];"
+      },
+      "id": "b1b2c3d4-2222-4222-8222-222222222202",
+      "name": "Configuracao",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.supabase_url }}/rest/v1/rpc/instalacoes_amanha",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.service_role }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.service_role }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={}",
+        "options": {}
+      },
+      "id": "b1b2c3d4-2222-4222-8222-222222222203",
+      "name": "Consultar amanha",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 300],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json;\nconst linhas = Array.isArray(payload) ? payload : [];\nif (linhas.length === 0) {\n  return [{\n    json: {\n      evento: 'instalacoes_amanha',\n      vazio: true,\n      mensagem: 'Nenhuma instalação agendada para amanhã.',\n      quantidade: 0,\n      instalacoes: [],\n    },\n  }];\n}\nconst instalacoes = linhas.map((item) => ({\n  cliente: item.cliente_nome,\n  endereco: item.endereco,\n  tecnico: item.tecnico_nome,\n  horario: item.data_instalacao,\n  pedido: item.numero,\n}));\nconst resumo = instalacoes\n  .map((item) => item.cliente + ' | ' + item.endereco + ' | ' + (item.tecnico || 'sem técnico') + ' | ' + item.horario)\n  .join('\\n');\nreturn [{\n  json: {\n    evento: 'instalacoes_amanha',\n    vazio: false,\n    quantidade: instalacoes.length,\n    resumo,\n    instalacoes,\n  },\n}];"
+      },
+      "id": "b1b2c3d4-2222-4222-8222-222222222204",
+      "name": "Montar resumo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Configuracao').first().json.webhook_destino }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "b1b2c3d4-2222-4222-8222-222222222205",
+      "name": "Enviar destino",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 220],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 2 falhou ao consultar ou enviar as instalações de amanhã: ' + mensagem);"
+      },
+      "id": "b1b2c3d4-2222-4222-8222-222222222206",
+      "name": "Registrar falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 420]
+    }
+  ],
+  "connections": {
+    "Todo dia as 8h": {
+      "main": [
+        [
+          {
+            "node": "Configuracao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuracao": {
+      "main": [
+        [
+          {
+            "node": "Consultar amanha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar amanha": {
+      "main": [
+        [
+          {
+            "node": "Montar resumo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar resumo": {
+      "main": [
+        [
+          {
+            "node": "Enviar destino",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar destino": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Registrar falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

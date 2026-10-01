@@ -1,0 +1,210 @@
+{
+  "name": "SmartLar — 1. Novo pedido",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smartlar-novo-pedido",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4111-8111-111111111101",
+      "name": "Webhook Supabase",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "smartlar-novo-pedido"
+    },
+    {
+      "parameters": {
+        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst WEBHOOK_DESTINO = 'https://webhook.site/COLE-SEU-UUID';\n\nconst raw = $input.first().json;\nconst body = raw.body && typeof raw.body === 'object' ? raw.body : raw;\nconst record = body.record || {};\n\nif (body.type !== 'INSERT' || record.status !== 'orcamento' || !record.id) {\n  return [];\n}\n\nreturn [{\n  json: {\n    pedido_id: record.id,\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    webhook_destino: WEBHOOK_DESTINO,\n  },\n}];"
+      },
+      "id": "a1b2c3d4-1111-4111-8111-111111111102",
+      "name": "Filtrar orcamento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "a1b2c3d4-1111-4111-8111-111111111103",
+      "name": "Aguardar itens",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [700, 300],
+      "webhookId": "smartlar-aguardar-itens"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Filtrar orcamento').first().json.supabase_url }}/rest/v1/pedidos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $('Filtrar orcamento').first().json.pedido_id }}"
+            },
+            {
+              "name": "select",
+              "value": "id,numero,valor_total,created_at,status,forma_pagamento,clientes(nome)"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Filtrar orcamento').first().json.service_role }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Filtrar orcamento').first().json.service_role }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4111-8111-111111111104",
+      "name": "Buscar pedido",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [920, 300],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json;\nconst lista = Array.isArray(payload) ? payload : [payload];\nconst pedido = lista[0];\nif (!pedido || !pedido.id) {\n  throw new Error('Pedido não encontrado depois do insert. O total pode ainda não ter sido calculado.');\n}\nconst cliente = pedido.clientes && pedido.clientes.nome ? pedido.clientes.nome : 'Cliente não identificado';\nreturn [{\n  json: {\n    evento: 'novo_pedido',\n    pedido_id: pedido.id,\n    numero: pedido.numero,\n    cliente,\n    valor_total: pedido.valor_total,\n    data: pedido.created_at,\n    status: pedido.status,\n  },\n}];"
+      },
+      "id": "a1b2c3d4-1111-4111-8111-111111111105",
+      "name": "Montar resumo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Filtrar orcamento').first().json.webhook_destino }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-1111-4111-8111-111111111106",
+      "name": "Enviar destino",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1400, 220],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 1 falhou e não enviou o pedido: ' + mensagem);"
+      },
+      "id": "a1b2c3d4-1111-4111-8111-111111111107",
+      "name": "Registrar falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1400, 420]
+    }
+  ],
+  "connections": {
+    "Webhook Supabase": {
+      "main": [
+        [
+          {
+            "node": "Filtrar orcamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar orcamento": {
+      "main": [
+        [
+          {
+            "node": "Aguardar itens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aguardar itens": {
+      "main": [
+        [
+          {
+            "node": "Buscar pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar pedido": {
+      "main": [
+        [
+          {
+            "node": "Montar resumo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar resumo": {
+      "main": [
+        [
+          {
+            "node": "Enviar destino",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar destino": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Registrar falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
