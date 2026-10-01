@@ -1,0 +1,1 @@
+export { ConfiguracaoAusente } from './ConfiguracaoAusente'

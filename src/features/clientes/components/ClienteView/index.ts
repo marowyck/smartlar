@@ -1,0 +1,1 @@
+export { ClienteView } from './ClienteView'

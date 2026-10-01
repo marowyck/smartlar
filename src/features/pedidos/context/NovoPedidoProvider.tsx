@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
-import { NovoPedidoDialog } from '@/features/pedidos/novo/NovoPedidoDialog'
-import { NovoPedidoContext } from '@/features/pedidos/novo/novo-pedido-context'
+import { NovoPedidoDialog } from '@/features/pedidos/components/NovoPedidoDialog'
+import { NovoPedidoContext } from '@/features/pedidos/context/novo-pedido-context'
 
 export function NovoPedidoProvider({ children }: { children: ReactNode }) {
   const [aberto, setAberto] = useState(false)

@@ -1,0 +1,1 @@
+export { ItemPedidoRow } from './ItemPedidoRow'

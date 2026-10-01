@@ -1,0 +1,1 @@
+export { PedidoResumo } from './PedidoResumo'

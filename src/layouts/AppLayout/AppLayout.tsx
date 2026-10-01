@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button'
 import { tituloDaRota } from '@/config/navigation'
 import { routes } from '@/constants/routes'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { useNovoPedido } from '@/features/pedidos/novo/novo-pedido-context'
-import { NovoPedidoProvider } from '@/features/pedidos/novo/NovoPedidoProvider'
+import { useNovoPedido } from '@/features/pedidos/context/novo-pedido-context'
+import { NovoPedidoProvider } from '@/features/pedidos/context/NovoPedidoProvider'
 import { PainelProvider } from '@/store/PainelProvider'
 
 export function AppLayout() {

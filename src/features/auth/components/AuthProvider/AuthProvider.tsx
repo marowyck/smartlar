@@ -1,30 +1,30 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { AuthContext, type AuthContextValue } from '@/features/auth/hooks/auth-context'
-import { supabase } from '@/services/supabase'
+import { entrar, observarSessao, obterSessao, sair, supabaseConfigurado } from '@/features/auth/services/auth'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(supabase != null)
+  const [loading, setLoading] = useState(supabaseConfigurado())
 
   useEffect(() => {
-    if (!supabase) return
+    if (!supabaseConfigurado()) return
 
     let ativo = true
-    supabase.auth.getSession().then(({ data }) => {
+    obterSessao().then((atual) => {
       if (!ativo) return
-      setSession(data.session)
+      setSession(atual)
       setLoading(false)
     })
 
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+    const cancelar = observarSessao((_event, next) => {
       setSession(next)
       setLoading(false)
     })
 
     return () => {
       ativo = false
-      data.subscription.unsubscribe()
+      cancelar()
     }
   }, [])
 
@@ -32,17 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       session,
       loading,
-      configurado: supabase != null,
-      async signIn(email, password) {
-        if (!supabase) throw new Error('Supabase não configurado.')
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-      },
-      async signOut() {
-        if (!supabase) return
-        const { error } = await supabase.auth.signOut()
-        if (error) throw error
-      },
+      configurado: supabaseConfigurado(),
+      signIn: entrar,
+      signOut: sair,
     }),
     [session, loading],
   )

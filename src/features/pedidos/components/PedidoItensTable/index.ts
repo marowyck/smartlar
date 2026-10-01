@@ -1,0 +1,1 @@
+export { PedidoItensTable } from './PedidoItensTable'
