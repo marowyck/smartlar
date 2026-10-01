@@ -52,7 +52,7 @@ O total do pedido é a soma dos itens. Dois itens de 450 e um de 180 resultam em
 
 ### Integrações
 
-- n8n com três workflows: novo pedido, instalações de amanhã e faturamento
+- n8n com três e-mails para o gestor: novo orçamento, instalações de amanhã e faturamento
 - Database Webhooks do Supabase como gatilho das automações
 - Deploy na Vercel ou na Netlify (`vercel.json` e `netlify.toml`)
 

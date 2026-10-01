@@ -34,7 +34,7 @@ Prints a tirar depois de importar e ativar:
 - Execução verde da automação 1, com cliente, valor e data
 - Execução verde da automação 2, com a instalação de amanhã (Elena, endereço, Pedro, horário)
 - Execução verde da automação 3 ao concluir um pedido
-- Uma execução vermelha, se quiser mostrar o nó "Registrar falha" (basta deixar a URL do destino inválida uma vez)
+- Uma execução vermelha, se quiser mostrar o nó "Registrar falha" (basta deixar o e-mail do Rafael inválido uma vez)
 
 O passo a passo está em [n8n/README.md](../n8n/README.md).
 
@@ -52,9 +52,9 @@ O passo a passo está em [n8n/README.md](../n8n/README.md).
 
 **Auth e RLS.** Qualquer usuário autenticado opera o sistema. Anônimo não lê nada. `historico_status` não tem insert pela API: só o trigger grava. A `service_role` não está no frontend.
 
-**n8n.** Os webhooks do Supabase avisam o n8n. A automação 2 não espera evento: ela chama a função `instalacoes_amanha()`, que filtra a data de amanhã em America/Sao_Paulo. Dia sem instalação gera um aviso explícito. Falha de HTTP derruba a execução com mensagem, em vez de marcar sucesso.
+**n8n.** Os webhooks do Supabase avisam o n8n, e o n8n manda e-mail para o Rafael: orçamento novo, agenda de amanhã às 8h e pedido faturado. A automação 2 não espera evento: ela chama a função `instalacoes_amanha()`, que filtra a data de amanhã em America/Sao_Paulo. Dia sem instalação gera um aviso explícito. Falha do Gmail ou do Supabase derruba a execução com mensagem, em vez de marcar sucesso.
 
-**O que eu faria com mais tempo.** Papel de técnico com RLS para cada um ver só a própria agenda. Editar ou remover itens enquanto ainda é orçamento. Trocar o webhook.site por uma planilha de faturamento. Testes de interface. Um número de pedido visível no WhatsApp que o Rafael manda pro cliente.
+**O que eu faria com mais tempo.** Papel de técnico com RLS para cada um ver só a própria agenda. Editar ou remover itens enquanto ainda é orçamento. Uma planilha de faturamento além do e-mail. Testes de interface. Um número de pedido visível no WhatsApp que o Rafael manda pro cliente.
 
 ## 5. Onde usei IA
 

@@ -21,17 +21,23 @@
       "name": "Todo dia as 8h",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [240, 300]
+      "position": [
+        240,
+        300
+      ]
     },
     {
       "parameters": {
-        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst WEBHOOK_DESTINO = 'https://webhook.site/COLE-SEU-UUID';\n\nreturn [{\n  json: {\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    webhook_destino: WEBHOOK_DESTINO,\n  },\n}];"
+        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst EMAIL_DESTINO = 'COLE_O_EMAIL_DO_RAFAEL';\n\nreturn [{\n  json: {\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    email_destino: EMAIL_DESTINO,\n  },\n}];"
       },
       "id": "b1b2c3d4-2222-4222-8222-222222222202",
       "name": "Configuracao",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 300]
+      "position": [
+        480,
+        300
+      ]
     },
     {
       "parameters": {
@@ -67,53 +73,57 @@
       "name": "Consultar amanha",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [720, 300],
+      "position": [
+        720,
+        300
+      ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const payload = $input.first().json;\nconst linhas = Array.isArray(payload) ? payload : [];\nif (linhas.length === 0) {\n  return [{\n    json: {\n      evento: 'instalacoes_amanha',\n      vazio: true,\n      mensagem: 'Nenhuma instalação agendada para amanhã.',\n      quantidade: 0,\n      instalacoes: [],\n    },\n  }];\n}\nconst instalacoes = linhas.map((item) => ({\n  cliente: item.cliente_nome,\n  endereco: item.endereco,\n  tecnico: item.tecnico_nome,\n  horario: item.data_instalacao,\n  pedido: item.numero,\n}));\nconst resumo = instalacoes\n  .map((item) => item.cliente + ' | ' + item.endereco + ' | ' + (item.tecnico || 'sem técnico') + ' | ' + item.horario)\n  .join('\\n');\nreturn [{\n  json: {\n    evento: 'instalacoes_amanha',\n    vazio: false,\n    quantidade: instalacoes.length,\n    resumo,\n    instalacoes,\n  },\n}];"
+        "jsCode": "function quando(iso) {\n  if (!iso) return 'sem horário';\n  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(iso));\n}\nfunction numeroPedido(numero) {\n  return '#' + String(numero).padStart(3, '0');\n}\n\nconst payload = $input.first().json;\nconst linhas = Array.isArray(payload) ? payload : [];\nconst para = $('Configuracao').first().json.email_destino;\n\nif (linhas.length === 0) {\n  return [{\n    json: {\n      para,\n      assunto: 'Amanhã: nenhuma instalação',\n      corpo: 'Nenhuma instalação agendada para amanhã.',\n    },\n  }];\n}\n\nconst blocos = linhas.map((item) => [\n  numeroPedido(item.numero) + ' · ' + (item.cliente_nome || 'Cliente'),\n  'Endereço: ' + (item.endereco || '—'),\n  'Técnico: ' + (item.tecnico_nome || 'sem técnico'),\n  'Horário: ' + quando(item.data_instalacao),\n].join('\\n'));\nconst quantidade = linhas.length;\nconst palavra = quantidade === 1 ? 'instalação' : 'instalações';\n\nreturn [{\n  json: {\n    para,\n    assunto: 'Amanhã: ' + quantidade + ' ' + palavra,\n    corpo: ['Instalações de amanhã.', '', blocos.join('\\n\\n')].join('\\n'),\n  },\n}];"
       },
       "id": "b1b2c3d4-2222-4222-8222-222222222204",
       "name": "Montar resumo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 220]
+      "position": [
+        960,
+        220
+      ]
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ $('Configuracao').first().json.webhook_destino }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json) }}",
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.para }}",
+        "subject": "={{ $json.assunto }}",
+        "emailType": "text",
+        "message": "={{ $json.corpo }}",
         "options": {}
       },
       "id": "b1b2c3d4-2222-4222-8222-222222222205",
-      "name": "Enviar destino",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [1200, 220],
+      "name": "Enviar e-mail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1200,
+        220
+      ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 2 falhou ao consultar ou enviar as instalações de amanhã: ' + mensagem);"
+        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 2 falhou ao consultar ou enviar o e-mail das instalações de amanhã: ' + mensagem);"
       },
       "id": "b1b2c3d4-2222-4222-8222-222222222206",
       "name": "Registrar falha",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1200, 420]
+      "position": [
+        1200,
+        420
+      ]
     }
   ],
   "connections": {
@@ -161,14 +171,14 @@
       "main": [
         [
           {
-            "node": "Enviar destino",
+            "node": "Enviar e-mail",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Enviar destino": {
+    "Enviar e-mail": {
       "main": [
         [],
         [

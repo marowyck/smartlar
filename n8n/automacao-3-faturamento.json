@@ -17,18 +17,24 @@
       "name": "Webhook Supabase",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "webhookId": "smartlar-pedido-concluido"
     },
     {
       "parameters": {
-        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst WEBHOOK_DESTINO = 'https://webhook.site/COLE-SEU-UUID';\n\nconst raw = $input.first().json;\nconst body = raw.body && typeof raw.body === 'object' ? raw.body : raw;\nconst atual = body.record || {};\nconst anterior = body.old_record || {};\n\nif (body.type !== 'UPDATE' || atual.status !== 'concluido' || anterior.status === 'concluido' || !atual.id) {\n  return [];\n}\n\nreturn [{\n  json: {\n    pedido_id: atual.id,\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    webhook_destino: WEBHOOK_DESTINO,\n  },\n}];"
+        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst EMAIL_DESTINO = 'COLE_O_EMAIL_DO_RAFAEL';\n\nconst raw = $input.first().json;\nconst body = raw.body && typeof raw.body === 'object' ? raw.body : raw;\nconst atual = body.record || {};\nconst anterior = body.old_record || {};\n\nif (body.type !== 'UPDATE' || atual.status !== 'concluido' || anterior.status === 'concluido' || !atual.id) {\n  return [];\n}\n\nreturn [{\n  json: {\n    pedido_id: atual.id,\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    email_destino: EMAIL_DESTINO,\n  },\n}];"
       },
       "id": "c1b2c3d4-3333-4333-8333-333333333302",
       "name": "Filtrar concluido",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 300]
+      "position": [
+        480,
+        300
+      ]
     },
     {
       "parameters": {
@@ -70,53 +76,57 @@
       "name": "Buscar pedido",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [720, 300],
+      "position": [
+        720,
+        300
+      ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const payload = $input.first().json;\nconst lista = Array.isArray(payload) ? payload : [payload];\nconst pedido = lista[0];\nif (!pedido || !pedido.id) {\n  throw new Error('Pedido concluído não encontrado para registrar o faturamento.');\n}\nconst cliente = pedido.clientes && pedido.clientes.nome ? pedido.clientes.nome : 'Cliente não identificado';\nreturn [{\n  json: {\n    evento: 'faturamento',\n    data: pedido.concluido_em || pedido.updated_at,\n    cliente,\n    valor: pedido.valor_total,\n    forma_pagamento: pedido.forma_pagamento,\n    pedido_id: pedido.id,\n    numero: pedido.numero,\n  },\n}];"
+        "jsCode": "function reais(valor) {\n  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor) || 0);\n}\nfunction quando(iso) {\n  if (!iso) return 'sem data';\n  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(iso));\n}\nfunction numeroPedido(numero) {\n  return '#' + String(numero).padStart(3, '0');\n}\nconst FORMAS = {\n  pix: 'Pix',\n  cartao: 'Cartão',\n  boleto: 'Boleto',\n  dinheiro: 'Dinheiro',\n  transferencia: 'Transferência',\n  a_combinar: 'A combinar',\n};\n\nconst payload = $input.first().json;\nconst lista = Array.isArray(payload) ? payload : [payload];\nconst pedido = lista[0];\nif (!pedido || !pedido.id) {\n  throw new Error('Pedido concluído não encontrado para registrar o faturamento.');\n}\nconst cliente = pedido.clientes && pedido.clientes.nome ? pedido.clientes.nome : 'Cliente não identificado';\nconst numero = numeroPedido(pedido.numero);\nconst valor = reais(pedido.valor_total);\nconst pagamento = FORMAS[pedido.forma_pagamento] || 'Não informada';\n\nreturn [{\n  json: {\n    para: $('Filtrar concluido').first().json.email_destino,\n    assunto: 'Faturado ' + numero + ' — ' + cliente + ' — ' + valor + ' (' + pagamento + ')',\n    corpo: [\n      'Pedido faturado.',\n      '',\n      'Pedido: ' + numero,\n      'Cliente: ' + cliente,\n      'Valor: ' + valor,\n      'Pagamento: ' + pagamento,\n      'Data: ' + quando(pedido.concluido_em || pedido.updated_at),\n    ].join('\\n'),\n  },\n}];"
       },
       "id": "c1b2c3d4-3333-4333-8333-333333333304",
       "name": "Montar faturamento",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [960, 220]
+      "position": [
+        960,
+        220
+      ]
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ $('Filtrar concluido').first().json.webhook_destino }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json) }}",
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.para }}",
+        "subject": "={{ $json.assunto }}",
+        "emailType": "text",
+        "message": "={{ $json.corpo }}",
         "options": {}
       },
       "id": "c1b2c3d4-3333-4333-8333-333333333305",
-      "name": "Enviar destino",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [1200, 220],
+      "name": "Enviar e-mail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1200,
+        220
+      ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 3 falhou ao registrar o faturamento: ' + mensagem);"
+        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 3 falhou e não enviou o e-mail de faturamento: ' + mensagem);"
       },
       "id": "c1b2c3d4-3333-4333-8333-333333333306",
       "name": "Registrar falha",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1200, 420]
+      "position": [
+        1200,
+        420
+      ]
     }
   ],
   "connections": {
@@ -164,14 +174,14 @@
       "main": [
         [
           {
-            "node": "Enviar destino",
+            "node": "Enviar e-mail",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Enviar destino": {
+    "Enviar e-mail": {
       "main": [
         [],
         [

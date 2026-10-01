@@ -17,18 +17,24 @@
       "name": "Webhook Supabase",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "webhookId": "smartlar-novo-pedido"
     },
     {
       "parameters": {
-        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst WEBHOOK_DESTINO = 'https://webhook.site/COLE-SEU-UUID';\n\nconst raw = $input.first().json;\nconst body = raw.body && typeof raw.body === 'object' ? raw.body : raw;\nconst record = body.record || {};\n\nif (body.type !== 'INSERT' || record.status !== 'orcamento' || !record.id) {\n  return [];\n}\n\nreturn [{\n  json: {\n    pedido_id: record.id,\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    webhook_destino: WEBHOOK_DESTINO,\n  },\n}];"
+        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst EMAIL_DESTINO = 'COLE_O_EMAIL_DO_RAFAEL';\n\nconst raw = $input.first().json;\nconst body = raw.body && typeof raw.body === 'object' ? raw.body : raw;\nconst record = body.record || {};\n\nif (body.type !== 'INSERT' || record.status !== 'orcamento' || !record.id) {\n  return [];\n}\n\nreturn [{\n  json: {\n    pedido_id: record.id,\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    email_destino: EMAIL_DESTINO,\n  },\n}];"
       },
       "id": "a1b2c3d4-1111-4111-8111-111111111102",
       "name": "Filtrar orcamento",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [480, 300]
+      "position": [
+        480,
+        300
+      ]
     },
     {
       "parameters": {
@@ -39,7 +45,10 @@
       "name": "Aguardar itens",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [700, 300],
+      "position": [
+        700,
+        300
+      ],
       "webhookId": "smartlar-aguardar-itens"
     },
     {
@@ -82,53 +91,57 @@
       "name": "Buscar pedido",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [920, 300],
+      "position": [
+        920,
+        300
+      ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const payload = $input.first().json;\nconst lista = Array.isArray(payload) ? payload : [payload];\nconst pedido = lista[0];\nif (!pedido || !pedido.id) {\n  throw new Error('Pedido não encontrado depois do insert. O total pode ainda não ter sido calculado.');\n}\nconst cliente = pedido.clientes && pedido.clientes.nome ? pedido.clientes.nome : 'Cliente não identificado';\nreturn [{\n  json: {\n    evento: 'novo_pedido',\n    pedido_id: pedido.id,\n    numero: pedido.numero,\n    cliente,\n    valor_total: pedido.valor_total,\n    data: pedido.created_at,\n    status: pedido.status,\n  },\n}];"
+        "jsCode": "function reais(valor) {\n  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor) || 0);\n}\nfunction quando(iso) {\n  if (!iso) return 'sem data';\n  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(iso));\n}\nfunction numeroPedido(numero) {\n  return '#' + String(numero).padStart(3, '0');\n}\n\nconst payload = $input.first().json;\nconst lista = Array.isArray(payload) ? payload : [payload];\nconst pedido = lista[0];\nif (!pedido || !pedido.id) {\n  throw new Error('Pedido não encontrado depois do insert. O total pode ainda não ter sido calculado.');\n}\nconst cliente = pedido.clientes && pedido.clientes.nome ? pedido.clientes.nome : 'Cliente não identificado';\nconst numero = numeroPedido(pedido.numero);\nconst valor = reais(pedido.valor_total);\n\nreturn [{\n  json: {\n    para: $('Filtrar orcamento').first().json.email_destino,\n    assunto: 'Novo orçamento ' + numero + ' — ' + cliente + ' — ' + valor,\n    corpo: [\n      'Entrou um orçamento novo.',\n      '',\n      'Pedido: ' + numero,\n      'Cliente: ' + cliente,\n      'Valor: ' + valor,\n      'Data: ' + quando(pedido.created_at),\n    ].join('\\n'),\n  },\n}];"
       },
       "id": "a1b2c3d4-1111-4111-8111-111111111105",
       "name": "Montar resumo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1160, 220]
+      "position": [
+        1160,
+        220
+      ]
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ $('Filtrar orcamento').first().json.webhook_destino }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json) }}",
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.para }}",
+        "subject": "={{ $json.assunto }}",
+        "emailType": "text",
+        "message": "={{ $json.corpo }}",
         "options": {}
       },
       "id": "a1b2c3d4-1111-4111-8111-111111111106",
-      "name": "Enviar destino",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [1400, 220],
+      "name": "Enviar e-mail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1400,
+        220
+      ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 1 falhou e não enviou o pedido: ' + mensagem);"
+        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 1 falhou e não enviou o e-mail do orçamento: ' + mensagem);"
       },
       "id": "a1b2c3d4-1111-4111-8111-111111111107",
       "name": "Registrar falha",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1400, 420]
+      "position": [
+        1400,
+        420
+      ]
     }
   ],
   "connections": {
@@ -187,14 +200,14 @@
       "main": [
         [
           {
-            "node": "Enviar destino",
+            "node": "Enviar e-mail",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Enviar destino": {
+    "Enviar e-mail": {
       "main": [
         [],
         [
