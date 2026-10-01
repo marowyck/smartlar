@@ -1,6 +1,6 @@
 import type { DashboardKpis, ProximaInstalacao } from '@/features/dashboard/types'
-import { toNumber } from '@/shared/lib/money'
-import { garantir } from '@/shared/lib/result'
+import { toNumber } from '@/utils/money'
+import { garantir } from '@/utils/result'
 import { getSupabase } from '@/services/supabase'
 
 export async function obterKpis(): Promise<DashboardKpis> {

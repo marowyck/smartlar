@@ -1,4 +1,4 @@
-import { garantir, termoBusca } from '@/shared/lib/result'
+import { garantir, termoBusca } from '@/utils/result'
 import { getSupabase } from '@/services/supabase'
 import type { Cliente, NovoClienteInput } from '@/features/clientes/types'
 

@@ -6,8 +6,8 @@ import type {
   PedidoResumo,
 } from '@/features/pedidos/types'
 import { isStatusPedido } from '@/features/pedidos/domain/status'
-import { isFormaPagamento, toNumber } from '@/shared/lib/money'
-import { um } from '@/shared/lib/result'
+import { isFormaPagamento, toNumber } from '@/utils/money'
+import { um } from '@/utils/result'
 
 export function mapResumo(row: PedidoResumo): PedidoResumo {
   return {

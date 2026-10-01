@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useNovoPedido } from '@/features/pedidos/novo/novo-pedido-context'
 import { NovoPedidoProvider } from '@/features/pedidos/novo/NovoPedidoProvider'
 import { PainelProvider } from '@/app/layouts/PainelProvider'
-import { cn } from '@/shared/lib/cn'
+import { cn } from '@/utils/cn'
 import { Button } from '@/shared/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/shared/ui/sheet'
 

@@ -1,5 +1,5 @@
-import { garantir } from '@/shared/lib/result'
-import { toNumber } from '@/shared/lib/money'
+import { garantir } from '@/utils/result'
+import { toNumber } from '@/utils/money'
 import { getSupabase } from '@/services/supabase'
 import type { NovoProdutoInput, Produto } from '@/features/produtos/types'
 

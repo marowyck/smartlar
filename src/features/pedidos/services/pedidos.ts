@@ -6,7 +6,7 @@ import type {
   PedidoDetalhe,
   PedidoResumo,
 } from '@/features/pedidos/types'
-import { garantir } from '@/shared/lib/result'
+import { garantir } from '@/utils/result'
 import { getSupabase } from '@/services/supabase'
 
 export async function listarPedidos(status?: StatusPedido | null): Promise<PedidoResumo[]> {

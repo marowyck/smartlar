@@ -1,5 +1,5 @@
 import { STATUS_LABEL, STATUS_PEDIDO, type StatusPedido } from '@/features/pedidos/domain/status'
-import { cn } from '@/shared/lib/cn'
+import { cn } from '@/utils/cn'
 
 const fluxo = STATUS_PEDIDO.filter((status) => status !== 'cancelado')
 

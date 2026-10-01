@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
-import { cn } from "@/shared/lib/cn"
+import { cn } from "@/utils/cn"
 
 import {
   Dialog,

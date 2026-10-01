@@ -1,4 +1,4 @@
-import { garantir } from '@/shared/lib/result'
+import { garantir } from '@/utils/result'
 import { getSupabase } from '@/services/supabase'
 import type { Tecnico } from '@/features/agenda/types'
 

@@ -24,7 +24,7 @@ export function toNumber(value: number | string | null | undefined): number {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-export { calcularSubtotal, calcularTotal } from '../../features/pedidos/domain/calculos.ts'
+export { calcularSubtotal, calcularTotal } from '../features/pedidos/domain/calculos.ts'
 
 export function formatBRL(value: number | string | null | undefined): string {
   return new Intl.NumberFormat('pt-BR', {

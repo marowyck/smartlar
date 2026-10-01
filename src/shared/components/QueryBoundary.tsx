@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Button } from '@/shared/ui/button'
 import { Skeleton } from '@/shared/ui/skeleton'
-import { mensagemErro } from '@/shared/lib/errors'
+import { mensagemErro } from '@/utils/errors'
 
 export function QueryBoundary({
   isLoading,

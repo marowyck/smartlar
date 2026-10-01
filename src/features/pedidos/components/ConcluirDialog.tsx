@@ -1,4 +1,4 @@
-import { FORMAS_PAGAMENTO, type FormaPagamento } from '@/shared/lib/money'
+import { FORMAS_PAGAMENTO, type FormaPagamento } from '@/utils/money'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Label } from '@/shared/ui/label'

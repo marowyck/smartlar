@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { atualizarProduto, criarProduto, listarProdutos } from '@/features/produtos/services/produtos'
-import { queryKeys } from '@/shared/constants/queryKeys'
+import { queryKeys } from '@/constants/queryKeys'
 import type { NovoProdutoInput } from '@/features/produtos/types'
 
 export function useProdutos(enabled = true) {

@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { listarAgenda } from '@/features/agenda/services/agenda'
 import { atualizarPedido } from '@/features/pedidos/services/pedidos'
-import { queryKeys } from '@/shared/constants/queryKeys'
-import { useInvalidateOperacao } from '@/shared/hooks/useInvalidateOperacao'
+import { queryKeys } from '@/constants/queryKeys'
+import { useInvalidateOperacao } from '@/hooks/useInvalidateOperacao'
 
 export function useAgenda(tecnicoId: string) {
   return useQuery({

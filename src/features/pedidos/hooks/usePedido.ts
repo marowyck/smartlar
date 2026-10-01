@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { obterPedido } from '@/features/pedidos/services/pedidos'
-import { queryKeys } from '@/shared/constants/queryKeys'
+import { queryKeys } from '@/constants/queryKeys'
 
 export function usePedido(id: string) {
   return useQuery({

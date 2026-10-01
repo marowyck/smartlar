@@ -4,7 +4,7 @@ import { clienteSchema, type ClienteFormValues } from '@/features/clientes/schem
 import { useCriarCliente } from '@/features/clientes/hooks/useClientes'
 import type { Cliente } from '@/features/clientes/types'
 import { Field } from '@/shared/components/Field'
-import { mensagemErro } from '@/shared/lib/errors'
+import { mensagemErro } from '@/utils/errors'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 

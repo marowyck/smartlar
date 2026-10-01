@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import { Field } from '@/shared/components/Field'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
-import { mensagemErro } from '@/shared/lib/errors'
+import { mensagemErro } from '@/utils/errors'
 
 const schema = z.object({
   email: z.string().trim().email('Informe um e-mail válido'),

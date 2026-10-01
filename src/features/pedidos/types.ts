@@ -1,6 +1,6 @@
 import type { Tecnico } from '@/features/agenda/types'
 import type { Cliente } from '@/features/clientes/types'
-import type { FormaPagamento } from '@/shared/lib/money'
+import type { FormaPagamento } from '@/utils/money'
 import type { StatusPedido } from '@/features/pedidos/domain/status'
 
 export type Pedido = {

@@ -1,6 +1,6 @@
 import { mapResumo } from '@/features/pedidos/services/mappers'
 import type { PedidoResumo } from '@/features/pedidos/types'
-import { garantir } from '@/shared/lib/result'
+import { garantir } from '@/utils/result'
 import { getSupabase } from '@/services/supabase'
 
 export async function listarAgenda(tecnicoId: string): Promise<PedidoResumo[]> {

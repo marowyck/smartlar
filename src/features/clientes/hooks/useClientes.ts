@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { atualizarCliente, criarCliente, listarClientes, obterCliente } from '@/features/clientes/services/clientes'
 import { listarPedidosDoCliente } from '@/features/pedidos/services/pedidos'
-import { queryKeys } from '@/shared/constants/queryKeys'
+import { queryKeys } from '@/constants/queryKeys'
 import type { NovoClienteInput } from '@/features/clientes/types'
 
 export function useClientes(busca: string) {

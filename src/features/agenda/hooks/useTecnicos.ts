@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { listarTecnicos } from '@/features/agenda/services/tecnicos'
-import { queryKeys } from '@/shared/constants/queryKeys'
+import { queryKeys } from '@/constants/queryKeys'
 
 export function useTecnicos() {
   return useQuery({
