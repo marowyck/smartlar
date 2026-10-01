@@ -44,7 +44,7 @@ O passo a passo está em [n8n/README.md](../n8n/README.md).
 
 **Status.** A transição fica no banco, não só na tela. Orçamento vai para aprovado ou cancelado. Aprovado vai para agendado ou cancelado. Agendado vai para em andamento. Em andamento vai para concluído. Não volta e não pula. Agendar sem técnico ou sem data é recusado. Itens só mudam enquanto o status é orçamento. Cada mudança, inclusive a criação, entra em `historico_status`.
 
-**Cálculo do enunciado.** 2 x 450 + 180 = 1080, em centavos no frontend e em `numeric` no Postgres. Os testes `src/shared/lib/money.test.ts` e `src/features/pedidos/domain/calculos.test.ts` travam esse número. O pedido de exemplo da Elena Rocha no seed também soma 1080 e o próprio seed falha se a conta não bater.
+**Cálculo do enunciado.** 2 x 450 + 180 = 1080, em centavos no frontend e em `numeric` no Postgres. Os testes `src/utils/money.test.ts` e `src/features/pedidos/domain/calculos.test.ts` travam esse número. O pedido de exemplo da Elena Rocha no seed também soma 1080 e o próprio seed falha se a conta não bater.
 
 **Frontend.** As telas ficam em `src/features/`, com serviços e hooks por domínio. O shell é mobile-first: barra inferior no celular, sidebar de ícones no tablet e sidebar completa no desktop. A área de conteúdo usa a largura da tela.
 
