@@ -1,1 +1,1 @@
-export { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
+export { useKpis, useOrcamentosParados, useProximasInstalacoes } from '@/features/dashboard/hooks/useDashboard'

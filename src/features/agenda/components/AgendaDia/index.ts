@@ -1,0 +1,1 @@
+export { AgendaDia } from './AgendaDia'

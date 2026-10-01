@@ -1,0 +1,1 @@
+export { OrcamentosParados } from './OrcamentosParados'

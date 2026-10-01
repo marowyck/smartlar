@@ -7,12 +7,12 @@ import { AppLayout } from '@/layouts/AppLayout'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { RedirecionarCliente, RedirecionarPedido } from '@/routes/Redirects'
 
-const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
-const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
-const ClientesPage = lazy(() => import('@/features/clientes/pages/ClientesPage').then((m) => ({ default: m.ClientesPage })))
-const ProdutosPage = lazy(() => import('@/features/produtos/pages/ProdutosPage').then((m) => ({ default: m.ProdutosPage })))
-const PedidosPage = lazy(() => import('@/features/pedidos/pages/PedidosPage').then((m) => ({ default: m.PedidosPage })))
-const AgendaPage = lazy(() => import('@/features/agenda/pages/AgendaPage').then((m) => ({ default: m.AgendaPage })))
+const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
+const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
+const ClientesPage = lazy(() => import('@/pages/ClientesPage').then((m) => ({ default: m.ClientesPage })))
+const ProdutosPage = lazy(() => import('@/pages/ProdutosPage').then((m) => ({ default: m.ProdutosPage })))
+const PedidosPage = lazy(() => import('@/pages/PedidosPage').then((m) => ({ default: m.PedidosPage })))
+const AgendaPage = lazy(() => import('@/pages/AgendaPage').then((m) => ({ default: m.AgendaPage })))
 
 function Fallback() {
   return (

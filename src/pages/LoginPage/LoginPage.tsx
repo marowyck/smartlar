@@ -1,15 +1,17 @@
 import { House } from 'lucide-react'
 import { Navigate } from 'react-router-dom'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { routes } from '@/constants/routes'
+import { appConfig } from '@/config/app'
 import { ConfiguracaoAusente } from '@/features/auth/components/ConfiguracaoAusente'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function LoginPage() {
   const { session, loading, configurado } = useAuth()
 
   if (!configurado) return <ConfiguracaoAusente />
-  if (!loading && session) return <Navigate to="/" replace />
+  if (!loading && session) return <Navigate to={routes.home} replace />
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
@@ -18,7 +20,7 @@ export function LoginPage() {
           <span className="flex size-10 items-center justify-center rounded-xl bg-primary-foreground/15">
             <House className="size-5" />
           </span>
-          <p className="text-lg font-semibold">SmartLar</p>
+          <p className="text-lg font-semibold">{appConfig.nome}</p>
         </div>
         <div className="max-w-md">
           <h1 className="text-4xl font-semibold tracking-tight text-balance">
