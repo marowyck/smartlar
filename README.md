@@ -2,6 +2,17 @@
 
 Sistema para o Rafael controlar orçamentos, instalações e o que ainda tem a receber. Os técnicos Lucas e Pedro consultam a agenda deles e atualizam o status do serviço.
 
+## Estrutura
+
+O frontend fica em `src/`, separado por domínio:
+
+- `app/` — providers, rotas lazy e o shell (sidebar, menu e barra inferior)
+- `features/` — auth, dashboard, clientes, produtos, pedidos e agenda, cada um com componentes, hooks e serviços
+- `shared/` — componentes de UI, layout, formatação e chaves do TanStack Query
+- `services/supabase.ts` — cliente único do Supabase
+
+Regras de status e total do pedido ficam em `src/features/pedidos/domain/`.
+
 ## Telas
 
 - Dashboard: pedidos do mês, faturado, a receber, pendentes de agenda, próximas instalações e orçamentos parados
