@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { criarCliente, listarClientes, obterCliente } from '@/features/clientes/services/clientes'
+import { atualizarCliente, criarCliente, listarClientes, obterCliente } from '@/features/clientes/services/clientes'
 import { listarPedidosDoCliente } from '@/features/pedidos/services/pedidos'
 import { queryKeys } from '@/shared/constants/queryKeys'
 import type { NovoClienteInput } from '@/features/clientes/types'
@@ -24,6 +24,16 @@ export function usePedidosDoCliente(id: string) {
     queryKey: queryKeys.clientes.pedidos(id),
     queryFn: () => listarPedidosDoCliente(id),
     enabled: Boolean(id),
+  })
+}
+
+export function useAtualizarCliente(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: NovoClienteInput) => atualizarCliente(id, input),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.clientes.all })
+    },
   })
 }
 

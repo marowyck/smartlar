@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { atualizarPreco, criarProduto, listarProdutos } from '@/features/produtos/services/produtos'
+import { atualizarProduto, criarProduto, listarProdutos } from '@/features/produtos/services/produtos'
 import { queryKeys } from '@/shared/constants/queryKeys'
 import type { NovoProdutoInput } from '@/features/produtos/types'
 
-export function useProdutos() {
+export function useProdutos(enabled = true) {
   return useQuery({
     queryKey: queryKeys.produtos.all,
     queryFn: listarProdutos,
+    enabled,
   })
 }
 
@@ -20,10 +21,10 @@ export function useCriarProduto() {
   })
 }
 
-export function useAtualizarPreco() {
+export function useAtualizarProduto() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, preco }: { id: string; preco: number }) => atualizarPreco(id, preco),
+    mutationFn: ({ id, input }: { id: string; input: NovoProdutoInput }) => atualizarProduto(id, input),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.produtos.all })
     },

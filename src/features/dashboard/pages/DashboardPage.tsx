@@ -4,7 +4,8 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { CalendarClock, CircleDollarSign, ClipboardList, Wallet } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { usePainel } from '@/app/layouts/painel-context'
 import { toast } from 'sonner'
 import { useKpis, useOrcamentosParados, useProximasInstalacoes } from '@/features/dashboard/hooks/useDashboard'
 import type { ProximaInstalacao } from '@/features/dashboard/types'
@@ -21,7 +22,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 export function DashboardPage() {
-  const navigate = useNavigate()
+  const { abrirPedido } = usePainel()
   const kpis = useKpis()
   const proximas = useProximasInstalacoes()
   const orcamentos = useOrcamentosParados()
@@ -69,7 +70,7 @@ export function DashboardPage() {
                           key={item.id}
                           type="button"
                           className="flex w-full flex-col gap-1 rounded-xl border p-3 text-left hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
-                          onClick={() => navigate(`/pedidos/${item.id}`)}
+                          onClick={() => abrirPedido(item.id, 'ver')}
                         >
                           <span>
                             <span className="block font-medium">{item.cliente_nome}</span>
@@ -99,7 +100,7 @@ export function DashboardPage() {
                 {orcamentos.data.map((pedido) => (
                   <Card key={pedido.id}>
                     <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <button type="button" className="text-left" onClick={() => navigate(`/pedidos/${pedido.id}`)}>
+                      <button type="button" className="text-left" onClick={() => abrirPedido(pedido.id, 'ver')}>
                         <p className="font-medium">
                           {numeroPedido(pedido.numero)} · {pedido.cliente_nome}
                         </p>

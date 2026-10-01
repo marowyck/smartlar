@@ -1,5 +1,8 @@
+import { CirclePlus } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { usePainel } from '@/app/layouts/painel-context'
+import { BotoesRegistro } from '@/shared/components/BotoesRegistro'
 import { ClienteForm } from '@/features/clientes/components/ClienteForm'
 import { useClientes } from '@/features/clientes/hooks/useClientes'
 import { EmptyState } from '@/shared/components/EmptyState'
@@ -9,11 +12,11 @@ import { QueryBoundary } from '@/shared/components/QueryBoundary'
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/shared/ui/sheet'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 
 export function ClientesPage() {
-  const navigate = useNavigate()
+  const { abrirCliente } = usePainel()
   const [busca, setBusca] = useState('')
   const [cadastroAberto, setCadastroAberto] = useState(false)
   const termo = useDebouncedValue(busca, 300)
@@ -24,7 +27,12 @@ export function ClientesPage() {
       <PageHeader
         title="Clientes"
         description="O telefone é o WhatsApp. O endereço é onde a instalação vai acontecer."
-        action={<Button onClick={() => setCadastroAberto(true)}>Novo cliente</Button>}
+        action={
+          <Button onClick={() => setCadastroAberto(true)}>
+            Novo cliente
+            <CirclePlus data-icon="inline-end" />
+          </Button>
+        }
       />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Input
@@ -45,13 +53,14 @@ export function ClientesPage() {
                   <button
                     type="button"
                     className="flex w-full items-center gap-3 rounded-xl bg-card p-4 text-left shadow-sm ring-1 ring-foreground/10"
-                    onClick={() => navigate(`/clientes/${cliente.id}`)}
+                    onClick={() => abrirCliente(cliente.id, 'ver')}
                   >
                     <Initials name={cliente.nome} />
                     <span className="min-w-0">
                       <span className="block truncate font-medium">{cliente.nome}</span>
                       <span className="block text-sm text-muted-foreground">{cliente.telefone}</span>
                       <span className="block truncate text-sm text-muted-foreground">{cliente.endereco}</span>
+                      <BotoesRegistro onVer={() => abrirCliente(cliente.id, 'ver')} onEditar={() => abrirCliente(cliente.id, 'editar')} />
                     </span>
                   </button>
                 </li>
@@ -64,11 +73,12 @@ export function ClientesPage() {
                     <TableHead>Nome</TableHead>
                     <TableHead>Telefone</TableHead>
                     <TableHead>Endereço</TableHead>
+                    <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {clientes.data.map((cliente) => (
-                    <TableRow key={cliente.id} className="cursor-pointer" onClick={() => navigate(`/clientes/${cliente.id}`)}>
+                    <TableRow key={cliente.id} className="cursor-pointer" onClick={() => abrirCliente(cliente.id, 'ver')}>
                       <TableCell>
                         <span className="flex items-center gap-3 font-medium">
                           <Initials name={cliente.nome} />
@@ -77,6 +87,9 @@ export function ClientesPage() {
                       </TableCell>
                       <TableCell className="whitespace-nowrap">{cliente.telefone}</TableCell>
                       <TableCell className="max-w-md truncate">{cliente.endereco}</TableCell>
+                      <TableCell>
+                        <BotoesRegistro onVer={() => abrirCliente(cliente.id, 'ver')} onEditar={() => abrirCliente(cliente.id, 'editar')} />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -88,22 +101,20 @@ export function ClientesPage() {
         )}
       </QueryBoundary>
 
-      <Sheet open={cadastroAberto} onOpenChange={setCadastroAberto}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>Novo cliente</SheetTitle>
-            <SheetDescription>Cadastre antes do orçamento, ou faça isso na hora do pedido.</SheetDescription>
-          </SheetHeader>
-          <div className="px-4 pb-6">
-            <ClienteForm
-              onCreated={(cliente) => {
-                setCadastroAberto(false)
-                navigate(`/clientes/${cliente.id}`)
-              }}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
+      <Dialog open={cadastroAberto} onOpenChange={setCadastroAberto}>
+        <DialogContent className="max-h-[min(90vh,720px)] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Novo cliente</DialogTitle>
+            <DialogDescription>Cadastre antes do orçamento, ou faça isso na hora do pedido.</DialogDescription>
+          </DialogHeader>
+          <ClienteForm
+            onCreated={() => {
+              toast.success('Cliente cadastrado')
+              setCadastroAberto(false)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   )
 }

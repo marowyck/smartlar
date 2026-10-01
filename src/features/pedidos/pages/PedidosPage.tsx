@@ -1,5 +1,9 @@
 import { useMemo } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { CirclePlus } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { usePainel } from '@/app/layouts/painel-context'
+import { useNovoPedido } from '@/features/pedidos/novo/novo-pedido-context'
+import { BotoesRegistro } from '@/shared/components/BotoesRegistro'
 import { usePedidos } from '@/features/pedidos/hooks/usePedidos'
 import { STATUS_LABEL, STATUS_PEDIDO, isStatusPedido, type StatusPedido } from '@/features/pedidos/domain/status'
 import { EmptyState } from '@/shared/components/EmptyState'
@@ -15,7 +19,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 const filtros = ['todos', ...STATUS_PEDIDO] as const
 
 export function PedidosPage() {
-  const navigate = useNavigate()
+  const { abrir } = useNovoPedido()
+  const { abrirPedido } = usePainel()
   const [params, setParams] = useSearchParams()
   const statusParam = params.get('status')
   const status: StatusPedido | 'todos' = isStatusPedido(statusParam) ? statusParam : 'todos'
@@ -38,8 +43,9 @@ export function PedidosPage() {
         title="Pedidos"
         description="Acompanhe o fluxo: orçamento, aprovado, agendado, em andamento e concluído."
         action={
-          <Button asChild>
-            <Link to="/pedidos/novo">Novo pedido</Link>
+          <Button onClick={() => abrir()}>
+            Novo pedido
+            <CirclePlus data-icon="inline-end" />
           </Button>
         }
       />
@@ -77,7 +83,7 @@ export function PedidosPage() {
                   <button
                     type="button"
                     className="w-full rounded-xl bg-card p-4 text-left shadow-sm ring-1 ring-foreground/10"
-                    onClick={() => navigate(`/pedidos/${pedido.id}`)}
+                    onClick={() => abrirPedido(pedido.id, 'ver')}
                   >
                     <span className="flex items-center justify-between gap-2">
                       <span className="font-medium">{numeroPedido(pedido.numero)}</span>
@@ -86,7 +92,7 @@ export function PedidosPage() {
                     <span className="mt-1 block">{pedido.cliente_nome}</span>
                     <span className="mt-2 flex items-center justify-between gap-2">
                       <StatusBadge status={pedido.status} />
-                      <span className="text-xs text-muted-foreground">{pedido.tecnico_nome ?? 'Sem técnico'}</span>
+                      <BotoesRegistro onVer={() => abrirPedido(pedido.id, 'ver')} onEditar={() => abrirPedido(pedido.id, 'editar')} />
                     </span>
                   </button>
                 </li>
@@ -102,11 +108,12 @@ export function PedidosPage() {
                     <TableHead className="hidden lg:table-cell">Instalação</TableHead>
                     <TableHead className="hidden xl:table-cell">Técnico</TableHead>
                     <TableHead>Valor</TableHead>
+                    <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {lista.map((pedido) => (
-                    <TableRow key={pedido.id} className="cursor-pointer" onClick={() => navigate(`/pedidos/${pedido.id}`)}>
+                    <TableRow key={pedido.id} className="cursor-pointer" onClick={() => abrirPedido(pedido.id, 'ver')}>
                       <TableCell className="font-medium">{numeroPedido(pedido.numero)}</TableCell>
                       <TableCell>
                         <div>{pedido.cliente_nome}</div>
@@ -118,6 +125,9 @@ export function PedidosPage() {
                       <TableCell className="hidden whitespace-nowrap lg:table-cell">{formatDataHora(pedido.data_instalacao)}</TableCell>
                       <TableCell className="hidden xl:table-cell">{pedido.tecnico_nome ?? '—'}</TableCell>
                       <TableCell className="whitespace-nowrap tabular-nums">{formatBRL(pedido.valor_total)}</TableCell>
+                      <TableCell>
+                        <BotoesRegistro onVer={() => abrirPedido(pedido.id, 'ver')} onEditar={() => abrirPedido(pedido.id, 'editar')} />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

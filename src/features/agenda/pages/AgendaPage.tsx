@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { usePainel } from '@/app/layouts/painel-context'
 import { toast } from 'sonner'
 import { useAgenda, useAtualizarAgenda } from '@/features/agenda/hooks/useAgenda'
 import { useTecnicos } from '@/features/agenda/hooks/useTecnicos'
@@ -17,6 +17,7 @@ import { Calendar } from '@/shared/ui/calendar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 export function AgendaPage() {
+  const { abrirPedido } = usePainel()
   const tecnicos = useTecnicos()
   const [tecnicoId, setTecnicoId] = useState('')
   const [dia, setDia] = useState<Date | undefined>()
@@ -110,9 +111,9 @@ export function AgendaPage() {
                       <div key={item.id} className="flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <Link className="font-medium underline-offset-4 hover:underline" to={`/pedidos/${item.id}`}>
+                            <button type="button" className="font-medium underline-offset-4 hover:underline" onClick={() => abrirPedido(item.id, 'ver')}>
                               {numeroPedido(item.numero)} · {item.cliente_nome}
-                            </Link>
+                            </button>
                             <StatusBadge status={item.status} />
                           </div>
                           <p className="text-sm text-muted-foreground">{formatDataHora(item.data_instalacao)}</p>

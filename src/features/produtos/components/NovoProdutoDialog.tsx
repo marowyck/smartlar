@@ -36,7 +36,7 @@ export function NovoProdutoDialog({
 
   return (
     <Dialog open={aberto} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[min(90vh,720px)] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Novo produto</DialogTitle>
           <DialogDescription>Use uma das categorias existentes ou crie outra.</DialogDescription>

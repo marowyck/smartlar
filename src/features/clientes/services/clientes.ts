@@ -30,3 +30,16 @@ export async function criarCliente(input: NovoClienteInput): Promise<Cliente> {
     .single()
   return garantir(data, error) as Cliente
 }
+
+export async function atualizarCliente(id: string, input: NovoClienteInput): Promise<void> {
+  const { error } = await getSupabase()
+    .from('clientes')
+    .update({
+      nome: input.nome.trim(),
+      telefone: input.telefone.trim(),
+      email: input.email.trim() || null,
+      endereco: input.endereco.trim(),
+    })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+}

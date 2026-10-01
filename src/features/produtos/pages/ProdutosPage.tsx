@@ -1,7 +1,9 @@
+import { CirclePlus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { EditarPrecoPopover } from '@/features/produtos/components/EditarPrecoPopover'
 import { NovoProdutoDialog } from '@/features/produtos/components/NovoProdutoDialog'
+import { usePainel } from '@/app/layouts/painel-context'
+import { BotoesRegistro } from '@/shared/components/BotoesRegistro'
 import { ordenarCategorias } from '@/features/produtos/constants'
 import { useProdutos } from '@/features/produtos/hooks/useProdutos'
 import { EmptyState } from '@/shared/components/EmptyState'
@@ -13,6 +15,7 @@ import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 
 export function ProdutosPage() {
+  const { abrirProduto } = usePainel()
   const [aberto, setAberto] = useState(false)
   const [categoria, setCategoria] = useState('todas')
   const produtos = useProdutos()
@@ -32,6 +35,7 @@ export function ProdutosPage() {
             }}
           >
             Novo produto
+            <CirclePlus data-icon="inline-end" />
           </Button>
         }
       />
@@ -58,7 +62,7 @@ export function ProdutosPage() {
                   <h2 className="text-lg font-semibold">{nome}</h2>
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                     {itens.map((produto) => (
-                      <Card key={produto.id}>
+                      <Card key={produto.id} variant="interactive" onClick={() => abrirProduto(produto.id, 'ver')}>
                         <CardHeader>
                           <CardTitle className="flex items-start justify-between gap-3">
                             <span className="text-balance">{produto.nome}</span>
@@ -67,7 +71,7 @@ export function ProdutosPage() {
                         </CardHeader>
                         <CardContent className="flex items-end justify-between gap-3">
                           <p className="text-sm text-muted-foreground">{produto.descricao || 'Sem descrição'}</p>
-                          <EditarPrecoPopover produto={produto} />
+                          <BotoesRegistro onVer={() => abrirProduto(produto.id, 'ver')} onEditar={() => abrirProduto(produto.id, 'editar')} />
                         </CardContent>
                       </Card>
                     ))}

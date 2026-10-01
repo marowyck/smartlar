@@ -1,8 +1,11 @@
-import { LogOut, Menu, MoreHorizontal } from 'lucide-react'
+import { CirclePlus, LogOut, Menu, MoreHorizontal } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { itemAtivo, marca as MarcaIcon, navInferior, navPrincipal, tituloDaRota } from '@/app/layouts/navigation'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useNovoPedido } from '@/features/pedidos/novo/novo-pedido-context'
+import { NovoPedidoProvider } from '@/features/pedidos/novo/NovoPedidoProvider'
+import { PainelProvider } from '@/app/layouts/PainelProvider'
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/shared/ui/sheet'
@@ -26,9 +29,11 @@ function Marca({ compacta = false }: { compacta?: boolean }) {
 function Links({
   compacto = false,
   onNavigate,
+  onNovoPedido,
 }: {
   compacto?: boolean
   onNavigate?: () => void
+  onNovoPedido: () => void
 }) {
   const location = useLocation()
 
@@ -54,22 +59,41 @@ function Links({
           </NavLink>
         )
       })}
-      <NavLink
-        to="/pedidos/novo"
-        onClick={onNavigate}
+      <button
+        type="button"
+        onClick={() => {
+          onNavigate?.()
+          onNovoPedido()
+        }}
         className={cn(
-          'mt-2 flex min-h-11 items-center justify-center rounded-xl bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90',
+          'mt-2 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90',
           compacto && 'px-0',
         )}
       >
-        {compacto ? '＋' : 'Novo pedido'}
-      </NavLink>
+        {compacto ? <CirclePlus className="size-4" /> : (
+          <>
+            Novo pedido
+            <CirclePlus className="size-4" />
+          </>
+        )}
+      </button>
     </nav>
   )
 }
 
 export function AppShell() {
+  return (
+    <NovoPedidoProvider>
+      <PainelProvider>
+        <Shell />
+      </PainelProvider>
+    </NovoPedidoProvider>
+  )
+}
+
+function Shell() {
   const { session, signOut } = useAuth()
+  const { abrir } = useNovoPedido()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuAberto, setMenuAberto] = useState(false)
@@ -94,7 +118,7 @@ export function AppShell() {
       <aside className="sticky top-0 hidden h-svh w-16 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex lg:w-64">
         <div className="flex h-full flex-col lg:hidden">
           <Marca compacta />
-          <Links compacto />
+          <Links compacto onNovoPedido={() => abrir()} />
           <Button
             variant="ghost"
             size="icon"
@@ -107,7 +131,7 @@ export function AppShell() {
         </div>
         <div className="hidden h-full flex-col lg:flex">
           <Marca />
-          <Links />
+          <Links onNovoPedido={() => abrir()} />
           {rodape}
         </div>
       </aside>
@@ -126,6 +150,20 @@ export function AppShell() {
           <ul className="grid grid-cols-5">
             {navInferior.map((link) => {
               const Icon = link.icon
+              if (link.to === '/pedidos/novo') {
+                return (
+                  <li key={link.to}>
+                    <button
+                      type="button"
+                      className="flex min-h-14 w-full flex-row items-center justify-center gap-1 text-[11px] text-muted-foreground"
+                      onClick={() => abrir()}
+                    >
+                      {link.label}
+                      <Icon className="size-4" />
+                    </button>
+                  </li>
+                )
+              }
               const ativo = itemAtivo(location.pathname, link.to)
               return (
                 <li key={link.to}>
@@ -163,7 +201,7 @@ export function AppShell() {
           </SheetHeader>
           <div className="flex h-full flex-col">
             <Marca />
-            <Links onNavigate={() => setMenuAberto(false)} />
+            <Links onNavigate={() => setMenuAberto(false)} onNovoPedido={() => abrir()} />
             {rodape}
           </div>
         </SheetContent>

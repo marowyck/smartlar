@@ -69,4 +69,5 @@ export type AtualizarPedidoInput = {
   tecnico_id?: string
   data_instalacao?: string
   forma_pagamento?: FormaPagamento | null
+  observacoes?: string | null
 }

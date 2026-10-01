@@ -18,7 +18,7 @@ Regras de status e total do pedido ficam em `src/features/pedidos/domain/`.
 - Dashboard: pedidos do mês, faturado, a receber, pendentes de agenda, próximas instalações e orçamentos parados
 - Clientes: cadastro, busca por nome ou telefone e pedidos do cliente
 - Produtos: catálogo por categoria, produto novo e edição de preço
-- Novo pedido: cliente (ou cadastro na hora), vários itens, subtotal, total e gravação como orçamento
+- Novo pedido: modal com cliente (ou cadastro na hora), vários itens, subtotal, total e gravação como orçamento
 - Pedidos: filtro por status, detalhe, avanço do fluxo e agendamento com técnico e data obrigatórios
 - Agenda: instalações por técnico, com botões para em andamento e concluído
 - Login com Supabase Auth

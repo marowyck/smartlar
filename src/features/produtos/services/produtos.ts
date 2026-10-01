@@ -31,10 +31,15 @@ export async function criarProduto(input: NovoProdutoInput): Promise<Produto> {
   return mapProduto(garantir(data, error) as Produto)
 }
 
-export async function atualizarPreco(id: string, precoUnitario: number): Promise<void> {
+export async function atualizarProduto(id: string, input: NovoProdutoInput): Promise<void> {
   const { error } = await getSupabase()
     .from('produtos')
-    .update({ preco_unitario: precoUnitario })
+    .update({
+      nome: input.nome.trim(),
+      categoria: input.categoria.trim(),
+      preco_unitario: input.preco_unitario,
+      descricao: input.descricao.trim() || null,
+    })
     .eq('id', id)
   if (error) throw new Error(error.message)
 }

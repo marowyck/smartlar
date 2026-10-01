@@ -1,4 +1,4 @@
-import { CalendarDays, ClipboardList, House, LayoutDashboard, Package, Plus, Users, type LucideIcon } from 'lucide-react'
+import { CalendarDays, CirclePlus, ClipboardList, House, LayoutDashboard, Package, Users, type LucideIcon } from 'lucide-react'
 
 export type NavItem = {
   to: string
@@ -17,7 +17,7 @@ export const navPrincipal: NavItem[] = [
 export const navInferior: NavItem[] = [
   { to: '/', label: 'Início', icon: LayoutDashboard },
   { to: '/pedidos', label: 'Pedidos', icon: ClipboardList },
-  { to: '/pedidos/novo', label: 'Novo', icon: Plus },
+  { to: '/pedidos/novo', label: 'Novo', icon: CirclePlus },
   { to: '/agenda', label: 'Agenda', icon: CalendarDays },
 ]
 
