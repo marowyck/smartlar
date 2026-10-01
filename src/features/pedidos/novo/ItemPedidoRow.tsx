@@ -3,9 +3,9 @@ import type { PedidoFormValues } from '@/features/pedidos/schemas'
 import type { Produto } from '@/features/produtos/types'
 import { calcularSubtotal } from '@/features/pedidos/domain/calculos'
 import { formatBRL } from '@/utils/money'
-import { Button } from '@/shared/ui/button'
-import { Label } from '@/shared/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export function ItemPedidoRow({
   index,

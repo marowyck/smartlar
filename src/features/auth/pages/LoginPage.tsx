@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { ConfiguracaoAusente } from '@/features/auth/components/ConfiguracaoAusente'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function LoginPage() {
   const { session, loading, configurado } = useAuth()

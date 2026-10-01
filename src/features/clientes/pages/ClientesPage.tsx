@@ -1,19 +1,20 @@
 import { CirclePlus } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { usePainel } from '@/app/layouts/painel-context'
-import { BotoesRegistro } from '@/shared/components/BotoesRegistro'
+import { usePainel } from '@/store/painel-context'
+import { RecordActions } from '@/components/common/RecordActions'
 import { ClienteForm } from '@/features/clientes/components/ClienteForm'
 import { useClientes } from '@/features/clientes/hooks/useClientes'
-import { EmptyState } from '@/shared/components/EmptyState'
-import { Initials } from '@/shared/components/Initials'
-import { PageContainer, PageHeader } from '@/shared/components/PageHeader'
-import { QueryBoundary } from '@/shared/components/QueryBoundary'
+import { EmptyState } from '@/components/common/EmptyState'
+import { Initials } from '@/components/common/Initials'
+import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 export function ClientesPage() {
   const { abrirCliente } = usePainel()
@@ -60,7 +61,7 @@ export function ClientesPage() {
                       <span className="block truncate font-medium">{cliente.nome}</span>
                       <span className="block text-sm text-muted-foreground">{cliente.telefone}</span>
                       <span className="block truncate text-sm text-muted-foreground">{cliente.endereco}</span>
-                      <BotoesRegistro onVer={() => abrirCliente(cliente.id, 'ver')} onEditar={() => abrirCliente(cliente.id, 'editar')} />
+                      <RecordActions onVer={() => abrirCliente(cliente.id, 'ver')} onEditar={() => abrirCliente(cliente.id, 'editar')} />
                     </span>
                   </button>
                 </li>
@@ -88,7 +89,7 @@ export function ClientesPage() {
                       <TableCell className="whitespace-nowrap">{cliente.telefone}</TableCell>
                       <TableCell className="max-w-md truncate">{cliente.endereco}</TableCell>
                       <TableCell>
-                        <BotoesRegistro onVer={() => abrirCliente(cliente.id, 'ver')} onEditar={() => abrirCliente(cliente.id, 'editar')} />
+                        <RecordActions onVer={() => abrirCliente(cliente.id, 'ver')} onEditar={() => abrirCliente(cliente.id, 'editar')} />
                       </TableCell>
                     </TableRow>
                   ))}

@@ -2,17 +2,18 @@ import { CirclePlus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { NovoProdutoDialog } from '@/features/produtos/components/NovoProdutoDialog'
-import { usePainel } from '@/app/layouts/painel-context'
-import { BotoesRegistro } from '@/shared/components/BotoesRegistro'
+import { usePainel } from '@/store/painel-context'
+import { RecordActions } from '@/components/common/RecordActions'
 import { ordenarCategorias } from '@/features/produtos/constants'
 import { useProdutos } from '@/features/produtos/hooks/useProdutos'
-import { EmptyState } from '@/shared/components/EmptyState'
-import { PageContainer, PageHeader } from '@/shared/components/PageHeader'
-import { QueryBoundary } from '@/shared/components/QueryBoundary'
+import { EmptyState } from '@/components/common/EmptyState'
+import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { cn } from '@/utils/cn'
 import { formatBRL } from '@/utils/money'
-import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function ProdutosPage() {
   const { abrirProduto } = usePainel()
@@ -71,7 +72,7 @@ export function ProdutosPage() {
                         </CardHeader>
                         <CardContent className="flex items-end justify-between gap-3">
                           <p className="text-sm text-muted-foreground">{produto.descricao || 'Sem descrição'}</p>
-                          <BotoesRegistro onVer={() => abrirProduto(produto.id, 'ver')} onEditar={() => abrirProduto(produto.id, 'editar')} />
+                          <RecordActions onVer={() => abrirProduto(produto.id, 'ver')} onEditar={() => abrirProduto(produto.id, 'editar')} />
                         </CardContent>
                       </Card>
                     ))}

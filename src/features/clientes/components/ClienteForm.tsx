@@ -3,10 +3,10 @@ import { useForm } from 'react-hook-form'
 import { clienteSchema, type ClienteFormValues } from '@/features/clientes/schemas'
 import { useCriarCliente } from '@/features/clientes/hooks/useClientes'
 import type { Cliente } from '@/features/clientes/types'
-import { Field } from '@/shared/components/Field'
+import { Field } from '@/components/common/Field'
 import { mensagemErro } from '@/utils/errors'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export function ClienteForm({
   onCreated,

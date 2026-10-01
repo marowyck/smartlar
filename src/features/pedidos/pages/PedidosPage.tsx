@@ -1,20 +1,21 @@
 import { useMemo } from 'react'
 import { CirclePlus } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
-import { usePainel } from '@/app/layouts/painel-context'
+import { usePainel } from '@/store/painel-context'
 import { useNovoPedido } from '@/features/pedidos/novo/novo-pedido-context'
-import { BotoesRegistro } from '@/shared/components/BotoesRegistro'
+import { RecordActions } from '@/components/common/RecordActions'
 import { usePedidos } from '@/features/pedidos/hooks/usePedidos'
 import { STATUS_LABEL, STATUS_PEDIDO, isStatusPedido, type StatusPedido } from '@/features/pedidos/domain/status'
-import { EmptyState } from '@/shared/components/EmptyState'
-import { PageContainer, PageHeader } from '@/shared/components/PageHeader'
-import { QueryBoundary } from '@/shared/components/QueryBoundary'
-import { StatusBadge } from '@/shared/components/StatusBadge'
+import { EmptyState } from '@/components/common/EmptyState'
+import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { QueryBoundary } from '@/components/common/QueryBoundary'
+import { StatusBadge } from '@/features/pedidos/components/StatusBadge'
 import { cn } from '@/utils/cn'
 import { formatDataHora } from '@/utils/format'
 import { formatBRL, numeroPedido } from '@/utils/money'
-import { Button } from '@/shared/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
+import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const filtros = ['todos', ...STATUS_PEDIDO] as const
 
@@ -92,7 +93,7 @@ export function PedidosPage() {
                     <span className="mt-1 block">{pedido.cliente_nome}</span>
                     <span className="mt-2 flex items-center justify-between gap-2">
                       <StatusBadge status={pedido.status} />
-                      <BotoesRegistro onVer={() => abrirPedido(pedido.id, 'ver')} onEditar={() => abrirPedido(pedido.id, 'editar')} />
+                      <RecordActions onVer={() => abrirPedido(pedido.id, 'ver')} onEditar={() => abrirPedido(pedido.id, 'editar')} />
                     </span>
                   </button>
                 </li>
@@ -126,7 +127,7 @@ export function PedidosPage() {
                       <TableCell className="hidden xl:table-cell">{pedido.tecnico_nome ?? '—'}</TableCell>
                       <TableCell className="whitespace-nowrap tabular-nums">{formatBRL(pedido.valor_total)}</TableCell>
                       <TableCell>
-                        <BotoesRegistro onVer={() => abrirPedido(pedido.id, 'ver')} onEditar={() => abrirPedido(pedido.id, 'editar')} />
+                        <RecordActions onVer={() => abrirPedido(pedido.id, 'ver')} onEditar={() => abrirPedido(pedido.id, 'editar')} />
                       </TableCell>
                     </TableRow>
                   ))}

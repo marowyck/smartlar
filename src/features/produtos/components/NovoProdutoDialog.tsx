@@ -3,12 +3,12 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { useCriarProduto } from '@/features/produtos/hooks/useProdutos'
-import { Field } from '@/shared/components/Field'
+import { Field } from '@/components/common/Field'
 import { mensagemErro } from '@/utils/errors'
-import { Button } from '@/shared/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
-import { Input } from '@/shared/ui/input'
-import { Textarea } from '@/shared/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 
 const schema = z.object({
   nome: z.string().trim().min(1, 'Informe o nome'),
