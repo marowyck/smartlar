@@ -37,6 +37,7 @@ export type PedidoResumo = {
 
 export type ItemPedido = {
   id: string
+  produto_id: string
   quantidade: number
   preco_unitario: number
   subtotal: number

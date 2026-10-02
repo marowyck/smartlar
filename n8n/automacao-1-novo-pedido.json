@@ -25,14 +25,31 @@
     },
     {
       "parameters": {
-        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst EMAIL_DESTINO = 'COLE_O_EMAIL_DO_RAFAEL';\n\nconst raw = $input.first().json;\nconst body = raw.body && typeof raw.body === 'object' ? raw.body : raw;\nconst record = body.record || {};\n\nif (body.type !== 'INSERT' || record.status !== 'orcamento' || !record.id) {\n  return [];\n}\n\nreturn [{\n  json: {\n    pedido_id: record.id,\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    email_destino: EMAIL_DESTINO,\n  },\n}];"
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\n\nconst entrada = $input.first().json;\n\nreturn [{\n  json: {\n    ...entrada,\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n  },\n}];"
+      },
+      "id": "a1b2c3d4-1111-4111-8111-111111111108",
+      "name": "Configuracao",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const entrada = $input.first().json;\nconst body = entrada.body && typeof entrada.body === 'object' ? entrada.body : entrada;\nconst record = body.record || {};\n\nif (body.type !== 'INSERT' || record.status !== 'orcamento' || !record.id) {\n  return [];\n}\n\nreturn [{\n  json: {\n    pedido_id: record.id,\n    supabase_url: entrada.supabase_url,\n    service_role: entrada.service_role,\n  },\n}];"
       },
       "id": "a1b2c3d4-1111-4111-8111-111111111102",
       "name": "Filtrar orcamento",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        480,
+        680,
         300
       ]
     },
@@ -46,7 +63,7 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        700,
+        900,
         300
       ],
       "webhookId": "smartlar-aguardar-itens"
@@ -54,17 +71,17 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "={{ $('Filtrar orcamento').first().json.supabase_url }}/rest/v1/pedidos",
+        "url": "={{ $json.supabase_url }}/rest/v1/pedidos",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
             {
               "name": "id",
-              "value": "=eq.{{ $('Filtrar orcamento').first().json.pedido_id }}"
+              "value": "=eq.{{ $json.pedido_id }}"
             },
             {
               "name": "select",
-              "value": "id,numero,valor_total,created_at,status,forma_pagamento,clientes(nome)"
+              "value": "id,numero,valor_total,created_at,status,forma_pagamento,clientes(nome,email)"
             }
           ]
         },
@@ -73,11 +90,11 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "={{ $('Filtrar orcamento').first().json.service_role }}"
+              "value": "={{ $json.service_role }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $('Filtrar orcamento').first().json.service_role }}"
+              "value": "=Bearer {{ $json.service_role }}"
             },
             {
               "name": "Accept",
@@ -92,22 +109,24 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        920,
+        1120,
         300
       ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "function reais(valor) {\n  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor) || 0);\n}\nfunction quando(iso) {\n  if (!iso) return 'sem data';\n  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(iso));\n}\nfunction numeroPedido(numero) {\n  return '#' + String(numero).padStart(3, '0');\n}\n\nconst payload = $input.first().json;\nconst lista = Array.isArray(payload) ? payload : [payload];\nconst pedido = lista[0];\nif (!pedido || !pedido.id) {\n  throw new Error('Pedido não encontrado depois do insert. O total pode ainda não ter sido calculado.');\n}\nconst cliente = pedido.clientes && pedido.clientes.nome ? pedido.clientes.nome : 'Cliente não identificado';\nconst numero = numeroPedido(pedido.numero);\nconst valor = reais(pedido.valor_total);\n\nreturn [{\n  json: {\n    para: $('Filtrar orcamento').first().json.email_destino,\n    assunto: 'Novo orçamento ' + numero + ' — ' + cliente + ' — ' + valor,\n    corpo: [\n      'Entrou um orçamento novo.',\n      '',\n      'Pedido: ' + numero,\n      'Cliente: ' + cliente,\n      'Valor: ' + valor,\n      'Data: ' + quando(pedido.created_at),\n    ].join('\\n'),\n  },\n}];"
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function reais(valor) {\n  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor) || 0);\n}\n\nfunction quando(iso, vazio) {\n  if (!iso) return vazio;\n  return new Intl.DateTimeFormat('pt-BR', {\n    dateStyle: 'short',\n    timeStyle: 'short',\n    timeZone: 'America/Sao_Paulo',\n  }).format(new Date(iso));\n}\n\nfunction numeroPedido(numero) {\n  return '#' + String(numero).padStart(3, '0');\n}\n\nfunction clienteDoPedido(pedido) {\n  const dados = pedido.clientes || {};\n  const nome = dados.nome || 'Cliente não identificado';\n  const email = String(dados.email || '').trim();\n  if (!email) throw new Error('O cliente ' + nome + ' não tem e-mail cadastrado.');\n  return { nome, email };\n}\n\nfunction primeiro(payload) {\n  const lista = Array.isArray(payload) ? payload : [payload];\n  return lista[0];\n}\n\nconst pedido = primeiro($input.first().json);\nif (!pedido || !pedido.id) {\n  throw new Error('Pedido não encontrado depois do insert. O total pode ainda não ter sido calculado.');\n}\n\nconst cliente = clienteDoPedido(pedido);\nconst numero = numeroPedido(pedido.numero);\nconst valor = reais(pedido.valor_total);\n\nreturn [{\n  json: {\n    para: cliente.email,\n    assunto: 'Orçamento ' + numero + ' — ' + valor,\n    corpo: [\n      'Olá, ' + cliente.nome + '.',\n      '',\n      'Seu orçamento foi registrado.',\n      '',\n      'Pedido: ' + numero,\n      'Valor: ' + valor,\n      'Data: ' + quando(pedido.created_at, 'sem data'),\n    ].join('\\n'),\n  },\n}];"
       },
       "id": "a1b2c3d4-1111-4111-8111-111111111105",
       "name": "Montar resumo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1160,
-        220
+        1340,
+        300
       ]
     },
     {
@@ -118,34 +137,49 @@
         "subject": "={{ $json.assunto }}",
         "emailType": "text",
         "message": "={{ $json.corpo }}",
-        "options": {}
+        "options": {
+          "appendAttribution": false
+        }
       },
       "id": "a1b2c3d4-1111-4111-8111-111111111106",
       "name": "Enviar e-mail",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        1400,
-        220
+        1560,
+        300
       ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 1 falhou e não enviou o e-mail do orçamento: ' + mensagem);"
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error(\"Automação 1 não enviou o e-mail do orçamento: \" + mensagem);"
       },
       "id": "a1b2c3d4-1111-4111-8111-111111111107",
       "name": "Registrar falha",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1400,
-        420
+        1340,
+        500
       ]
     }
   ],
   "connections": {
     "Webhook Supabase": {
+      "main": [
+        [
+          {
+            "node": "Configuracao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuracao": {
       "main": [
         [
           {

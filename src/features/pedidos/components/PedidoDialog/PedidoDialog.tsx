@@ -3,6 +3,7 @@ import { CancelarDialog } from '@/features/pedidos/components/CancelarDialog'
 import { ConcluirDialog } from '@/features/pedidos/components/ConcluirDialog'
 import { PedidoAcoes } from '@/features/pedidos/components/PedidoAcoes'
 import { PedidoHistorico } from '@/features/pedidos/components/PedidoHistorico'
+import { PedidoItensEditor } from '@/features/pedidos/components/PedidoItensEditor'
 import { PedidoItensTable } from '@/features/pedidos/components/PedidoItensTable'
 import { PedidoResumo } from '@/features/pedidos/components/PedidoResumo'
 import { StatusBadge } from '@/features/pedidos/components/StatusBadge'
@@ -40,9 +41,11 @@ export function PedidoDialog({ id, modo, aberto, onOpenChange, onModo, onAbrirCl
         <DialogHeader>
           <DialogTitle>{dados ? `Pedido ${numeroPedido(dados.numero)}` : 'Pedido'}</DialogTitle>
           <DialogDescription>
-            {editando
-              ? 'O status só anda para a frente. Cancelar só sai de orçamento ou aprovado.'
-              : 'Consulta do pedido, dos itens e do histórico.'}
+            {editando && dados?.status === 'orcamento'
+              ? 'Enquanto é orçamento, os itens podem mudar. O status só anda para a frente.'
+              : editando
+                ? 'O status só anda para a frente. Cancelar só sai de orçamento ou aprovado.'
+                : 'Consulta do pedido, dos itens e do histórico.'}
           </DialogDescription>
         </DialogHeader>
         <QueryBoundary isLoading={dialog.pedido.isLoading} error={dialog.pedido.error} onRetry={() => void dialog.pedido.refetch()}>
@@ -61,7 +64,16 @@ export function PedidoDialog({ id, modo, aberto, onOpenChange, onModo, onAbrirCl
               ) : null}
               <StatusBadge status={dados.status} />
               <StatusTimeline status={dados.status} />
-              <PedidoItensTable pedido={dados} />
+              {editando && dados.status === 'orcamento' ? (
+                <PedidoItensEditor
+                  key={dados.itens_pedido
+                    .map((item) => `${item.id}:${item.produto_id}:${item.quantidade}:${item.preco_unitario}`)
+                    .join('|')}
+                  pedido={dados}
+                />
+              ) : (
+                <PedidoItensTable pedido={dados} />
+              )}
               <PedidoResumo
                 pedido={dados}
                 editando={editando}

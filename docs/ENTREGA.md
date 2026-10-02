@@ -4,18 +4,13 @@ Sistema de gestão da SmartLar para o Rafael: clientes, catálogo, orçamentos, 
 
 ## 1. Link do projeto funcionando
 
-Preencher depois do deploy (Vercel ou Netlify):
-
-- Produção: `https://SEU-PROJETO.vercel.app`
+- Produção: `https://temporary-racing-harp-4wy8unc.vercel.app`
+- Login de demonstração: `rafael@smartlar.dev` / `SmartLar-rafael-2026`
 - Comando local: `npm install`, copiar `.env.example` para `.env`, `npm run dev`
-
-O build de produção já passa (`npm run build`). `vercel.json` e `netlify.toml` reescrevem as rotas da SPA para `index.html`. No provedor, configurar `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` antes do build.
 
 ## 2. Supabase
 
-Preencher com o link do projeto:
-
-- Projeto: `https://supabase.com/dashboard/project/SEU-REF`
+- Projeto: `https://supabase.com/dashboard/project/cpnsbtrlagsqemldzcif`
 
 O que mostrar nos prints:
 
@@ -24,17 +19,16 @@ O que mostrar nos prints:
 - Dados do seed: 5 clientes, Lucas e Pedro, 7 produtos em 3 categorias, 11 pedidos
 - Pedido da Elena Rocha com 2x Câmera IP + 1x Sensor de presença e `valor_total = 1080.00`
 
-SQL, nesta ordem: `supabase/migrations/0001_schema.sql`, `0002_functions.sql`, `0003_rls.sql`, `supabase/seed.sql`.
+SQL, nesta ordem: `supabase/migrations/0001_schema.sql`, `0002_functions.sql`, `0003_rls.sql`, `0004_instalacoes_amanha_email.sql`, `0005_webhooks_n8n.sql`, `supabase/seed.sql`.
 
 ## 3. n8n
 
-Prints a tirar depois de importar e ativar:
+Os três workflows estão ativos. O insert e o update de `pedidos` disparam as URLs de produção pelo trigger `notificar_n8n`.
 
-- Canvas de cada workflow em `n8n/`
-- Execução verde da automação 1, com cliente, valor e data
-- Execução verde da automação 2, com a instalação de amanhã (Elena, endereço, Pedro, horário)
-- Execução verde da automação 3 ao concluir um pedido
-- Uma execução vermelha, se quiser mostrar o nó "Registrar falha" (basta deixar o e-mail do Rafael inválido uma vez)
+- [Novo pedido](https://marowyck.app.n8n.cloud/workflow/sugYFG7meQqhZ3Lj/executions/7): webhook do Supabase, e-mail do orçamento #013 para `dev.mariaolivia@gmail.com`, R$ 450,00, 02/10/2026.
+- [Instalações de amanhã](https://marowyck.app.n8n.cloud/workflow/tJ1sEGJ9qZyDxgyC/executions/8): Elena Rocha, Rua Clélia 210, Pedro, 03/10/2026 às 9h.
+- [Faturamento](https://marowyck.app.n8n.cloud/workflow/HosIcG2t55E5tugH/executions/10): webhook do Supabase ao concluir o #013, Pix, R$ 450,00.
+- Dia sem instalação não envia e-mail. Cliente sem e-mail, falha do Gmail ou falha do Supabase caem em "Registrar falha".
 
 O passo a passo está em [n8n/README.md](../n8n/README.md).
 
@@ -42,7 +36,7 @@ O passo a passo está em [n8n/README.md](../n8n/README.md).
 
 **Banco.** O pedido guarda `valor_total`, mas quem escreve essa coluna é o trigger dos itens: soma de `quantidade * preco_unitario`. O subtotal é coluna gerada. O preço do item é copiado do catálogo na hora da inclusão e não muda se o catálogo mudar depois. Assim o Rafael pode reajustar preço sem reescrever orçamento antigo.
 
-**Status.** A transição fica no banco, não só na tela. Orçamento vai para aprovado ou cancelado. Aprovado vai para agendado ou cancelado. Agendado vai para em andamento. Em andamento vai para concluído. Não volta e não pula. Agendar sem técnico ou sem data é recusado. Itens só mudam enquanto o status é orçamento. Cada mudança, inclusive a criação, entra em `historico_status`.
+**Status.** A transição fica no banco, não só na tela. Orçamento vai para aprovado ou cancelado. Aprovado vai para agendado ou cancelado. Agendado vai para em andamento. Em andamento vai para concluído. Não volta e não pula. Agendar sem técnico ou sem data é recusado. Itens só mudam enquanto o status é orçamento: a tela inclui, remove e altera a quantidade, e o banco recusa qualquer outra fase. Trocar o produto grava o preço atual do catálogo; mudar só a quantidade mantém o preço do orçamento. Cada mudança de status, inclusive a criação, entra em `historico_status`.
 
 **Cálculo do enunciado.** 2 x 450 + 180 = 1080, em centavos no frontend e em `numeric` no Postgres. Os testes `src/utils/money.test.ts` e `src/features/pedidos/domain/calculos.test.ts` travam esse número. O pedido de exemplo da Elena Rocha no seed também soma 1080 e o próprio seed falha se a conta não bater.
 
@@ -52,9 +46,9 @@ O passo a passo está em [n8n/README.md](../n8n/README.md).
 
 **Auth e RLS.** Qualquer usuário autenticado opera o sistema. Anônimo não lê nada. `historico_status` não tem insert pela API: só o trigger grava. A `service_role` não está no frontend.
 
-**n8n.** Os webhooks do Supabase avisam o n8n, e o n8n manda e-mail para o Rafael: orçamento novo, agenda de amanhã às 8h e pedido faturado. A automação 2 não espera evento: ela chama a função `instalacoes_amanha()`, que filtra a data de amanhã em America/Sao_Paulo. Dia sem instalação gera um aviso explícito. Falha do Gmail ou do Supabase derruba a execução com mensagem, em vez de marcar sucesso.
+**n8n.** Os webhooks do Supabase avisam o n8n, e o n8n manda e-mail para o endereço cadastrado no cliente daquele pedido: orçamento novo, agenda de amanhã às 8h e pedido concluído. A automação 2 não espera evento: ela chama a função `instalacoes_amanha()`, que filtra a data de amanhã em America/Sao_Paulo e devolve o e-mail do cliente. Dia sem instalação não envia e-mail. Cliente sem e-mail, falha do Gmail ou falha do Supabase derruba a execução com mensagem, em vez de marcar sucesso.
 
-**O que eu faria com mais tempo.** Papel de técnico com RLS para cada um ver só a própria agenda. Editar ou remover itens enquanto ainda é orçamento. Uma planilha de faturamento além do e-mail. Testes de interface. Um número de pedido visível no WhatsApp que o Rafael manda pro cliente.
+**O que eu faria com mais tempo.** Papel de técnico com RLS para cada um ver só a própria agenda. Uma planilha de faturamento além do e-mail. Testes de interface. Um número de pedido visível no WhatsApp que o Rafael manda pro cliente.
 
 ## 5. Onde usei IA
 
@@ -64,18 +58,16 @@ O que ainda depende de mim na entrevista: explicar por que o total mora no banco
 
 ## 6. Repositório GitHub
 
-Preencher depois do push:
+- https://github.com/marowyck/smartlar
 
-- `https://github.com/SEU-USUARIO/smartlar`
-
-O repositório precisa ser público. Não commitar `.env` nem a `service_role`.
+O repositório é público. `.env` e a `service_role` não entram nele.
 
 ## Checklist antes de enviar
 
-- [ ] SQL aplicado e seed rodado
-- [ ] Usuário do Rafael criado no Auth
-- [ ] `.env` local e variáveis do deploy
-- [ ] Link abrindo as seis telas
-- [ ] Pedido novo com total R$ 1.080,00
-- [ ] Workflows n8n ativos, com prints e logs
-- [ ] Este documento com os links no lugar dos placeholders
+- [x] SQL aplicado e seed rodado
+- [x] Usuário do Rafael criado no Auth (`rafael@smartlar.dev`)
+- [x] `.env` local e variáveis do deploy
+- [x] Link abrindo as seis telas
+- [x] Pedido da Elena com total R$ 1.080,00
+- [x] Workflows n8n ativos, com logs das três execuções
+- [x] Este documento com os links no lugar dos placeholders

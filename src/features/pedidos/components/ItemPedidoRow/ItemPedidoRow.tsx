@@ -15,6 +15,7 @@ export function ItemPedidoRow({
   produtoId,
   quantidade,
   podeRemover,
+  precoUnitario,
   onQuantidade,
   onRemover,
 }: {
@@ -25,10 +26,11 @@ export function ItemPedidoRow({
   produtoId: string
   quantidade: number
   podeRemover: boolean
+  precoUnitario?: number
   onQuantidade: (valor: number) => void
   onRemover: () => void
 }) {
-  const preco = produtos.find((produto) => produto.id === produtoId)?.preco_unitario ?? 0
+  const preco = precoUnitario ?? produtos.find((produto) => produto.id === produtoId)?.preco_unitario ?? 0
 
   return (
     <div className="grid gap-3 rounded-xl border p-3 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-end">

@@ -8,6 +8,7 @@ export const pedidoSchema = z
     itens: z
       .array(
         z.object({
+          id: z.string().uuid().optional(),
           produto_id: z.string().uuid('Selecione um produto'),
           quantidade: z.number().int().positive('Quantidade inválida'),
         }),

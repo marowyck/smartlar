@@ -28,14 +28,16 @@
     },
     {
       "parameters": {
-        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\nconst EMAIL_DESTINO = 'COLE_O_EMAIL_DO_RAFAEL';\n\nreturn [{\n  json: {\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n    email_destino: EMAIL_DESTINO,\n  },\n}];"
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\n\nconst entrada = $input.first().json;\n\nreturn [{\n  json: {\n    ...entrada,\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n  },\n}];"
       },
       "id": "b1b2c3d4-2222-4222-8222-222222222202",
       "name": "Configuracao",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        480,
+        460,
         300
       ]
     },
@@ -74,22 +76,24 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        720,
+        680,
         300
       ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "function quando(iso) {\n  if (!iso) return 'sem horário';\n  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(iso));\n}\nfunction numeroPedido(numero) {\n  return '#' + String(numero).padStart(3, '0');\n}\n\nconst payload = $input.first().json;\nconst linhas = Array.isArray(payload) ? payload : [];\nconst para = $('Configuracao').first().json.email_destino;\n\nif (linhas.length === 0) {\n  return [{\n    json: {\n      para,\n      assunto: 'Amanhã: nenhuma instalação',\n      corpo: 'Nenhuma instalação agendada para amanhã.',\n    },\n  }];\n}\n\nconst blocos = linhas.map((item) => [\n  numeroPedido(item.numero) + ' · ' + (item.cliente_nome || 'Cliente'),\n  'Endereço: ' + (item.endereco || '—'),\n  'Técnico: ' + (item.tecnico_nome || 'sem técnico'),\n  'Horário: ' + quando(item.data_instalacao),\n].join('\\n'));\nconst quantidade = linhas.length;\nconst palavra = quantidade === 1 ? 'instalação' : 'instalações';\n\nreturn [{\n  json: {\n    para,\n    assunto: 'Amanhã: ' + quantidade + ' ' + palavra,\n    corpo: ['Instalações de amanhã.', '', blocos.join('\\n\\n')].join('\\n'),\n  },\n}];"
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function quando(iso) {\n  if (!iso) return 'sem horário';\n  return new Intl.DateTimeFormat('pt-BR', {\n    dateStyle: 'short',\n    timeStyle: 'short',\n    timeZone: 'America/Sao_Paulo',\n  }).format(new Date(iso));\n}\n\nfunction numeroPedido(numero) {\n  return '#' + String(numero).padStart(3, '0');\n}\n\nfunction linhasDaConsulta() {\n  const linhas = [];\n  for (const item of $input.all()) {\n    const json = item.json;\n    if (Array.isArray(json)) linhas.push(...json);\n    else if (json && json.pedido_id) linhas.push(json);\n  }\n  return linhas;\n}\n\nfunction bloco(item) {\n  return [\n    numeroPedido(item.numero),\n    'Endereço: ' + (item.endereco || '—'),\n    'Técnico: ' + (item.tecnico_nome || 'sem técnico'),\n    'Horário: ' + quando(item.data_instalacao),\n  ].join('\\n');\n}\n\nconst linhas = linhasDaConsulta();\nif (linhas.length === 0) return [];\n\nconst semEmail = linhas.filter((item) => !String(item.cliente_email || '').trim());\nif (semEmail.length > 0) {\n  const nomes = semEmail.map((item) => item.cliente_nome || 'cliente sem nome').join(', ');\n  throw new Error('Sem e-mail cadastrado para: ' + nomes);\n}\n\nconst porEmail = new Map();\nfor (const item of linhas) {\n  const email = String(item.cliente_email).trim();\n  const grupo = porEmail.get(email) || [];\n  grupo.push(item);\n  porEmail.set(email, grupo);\n}\n\nreturn [...porEmail.entries()].map(([email, itens]) => {\n  const cliente = itens[0].cliente_nome || 'cliente';\n  const quantidade = itens.length;\n  const palavra = quantidade === 1 ? 'instalação' : 'instalações';\n  return {\n    json: {\n      para: email,\n      assunto: 'Amanhã: ' + quantidade + ' ' + palavra,\n      corpo: [\n        'Olá, ' + cliente + '.',\n        '',\n        'Sua instalação está marcada para amanhã.',\n        '',\n        itens.map(bloco).join('\\n\\n'),\n      ].join('\\n'),\n    },\n  };\n});"
       },
       "id": "b1b2c3d4-2222-4222-8222-222222222204",
       "name": "Montar resumo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        960,
-        220
+        900,
+        300
       ]
     },
     {
@@ -100,29 +104,33 @@
         "subject": "={{ $json.assunto }}",
         "emailType": "text",
         "message": "={{ $json.corpo }}",
-        "options": {}
+        "options": {
+          "appendAttribution": false
+        }
       },
       "id": "b1b2c3d4-2222-4222-8222-222222222205",
       "name": "Enviar e-mail",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        1200,
-        220
+        1120,
+        300
       ],
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error('Automação 2 falhou ao consultar ou enviar o e-mail das instalações de amanhã: ' + mensagem);"
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error(\"Automação 2 não enviou o e-mail das instalações de amanhã: \" + mensagem);"
       },
       "id": "b1b2c3d4-2222-4222-8222-222222222206",
       "name": "Registrar falha",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1200,
-        420
+        900,
+        500
       ]
     }
   ],

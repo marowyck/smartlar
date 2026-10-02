@@ -52,7 +52,10 @@ export function useNovoPedidoForm(clienteInicial: string | undefined, onCriado: 
         cliente_id: values.cliente_id,
         observacoes: values.observacoes,
         forma_pagamento: isFormaPagamento(values.forma_pagamento) ? values.forma_pagamento : null,
-        itens: values.itens,
+        itens: values.itens.map((item) => ({
+          produto_id: item.produto_id,
+          quantidade: item.quantidade,
+        })),
       },
       {
         onSuccess: () => {

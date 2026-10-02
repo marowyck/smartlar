@@ -1,3 +1,4 @@
+import type { PlanoItens } from '@/features/pedidos/domain/itens'
 import type { StatusPedido } from '@/features/pedidos/domain/status'
 import { mapPedido, mapResumo } from '@/features/pedidos/services/mappers'
 import type {
@@ -36,7 +37,7 @@ export async function obterPedido(id: string): Promise<PedidoDetalhe> {
       clientes (id, nome, telefone, email, endereco, created_at),
       tecnicos (id, nome, telefone, especialidade),
       itens_pedido (
-        id, quantidade, preco_unitario, subtotal,
+        id, produto_id, quantidade, preco_unitario, subtotal,
         produtos (id, nome, categoria)
       ),
       historico_status (id, status_anterior, status_novo, alterado_em)
@@ -61,4 +62,34 @@ export async function criarPedido(input: NovoPedidoInput): Promise<string> {
 export async function atualizarPedido(id: string, campos: AtualizarPedidoInput): Promise<void> {
   const { error } = await getSupabase().from('pedidos').update(campos).eq('id', id)
   if (error) throw new Error(error.message)
+}
+
+export async function salvarItensPedido(pedidoId: string, plano: PlanoItens): Promise<void> {
+  const supabase = getSupabase()
+
+  if (plano.excluir.length > 0) {
+    const { error } = await supabase.from('itens_pedido').delete().eq('pedido_id', pedidoId).in('id', plano.excluir)
+    if (error) throw new Error(error.message)
+  }
+
+  for (const item of plano.atualizar) {
+    const { error } = await supabase
+      .from('itens_pedido')
+      .update({ quantidade: item.quantidade })
+      .eq('pedido_id', pedidoId)
+      .eq('id', item.id)
+    if (error) throw new Error(error.message)
+  }
+
+  if (plano.inserir.length > 0) {
+    const { error } = await supabase.from('itens_pedido').insert(
+      plano.inserir.map((item) => ({
+        pedido_id: pedidoId,
+        produto_id: item.produtoId,
+        quantidade: item.quantidade,
+        preco_unitario: 0,
+      })),
+    )
+    if (error) throw new Error(error.message)
+  }
 }
