@@ -181,11 +181,3 @@ npm test         # testes de domínio com node:test
 
 - [docs/ENTREGA.md](docs/ENTREGA.md): o que foi entregue e as decisões
 - [docs/TESTE.md](docs/TESTE.md): roteiro para testar o fluxo completo
-
-## Licença
-
-Uso interno da SmartLar. Todos os direitos reservados.
-
-## Autor
-
-Desenvolvido para a SmartLar por Marcos.
