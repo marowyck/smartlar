@@ -52,37 +52,22 @@ O total do pedido é a soma dos itens. Dois itens de 450 e um de 180 resultam em
 
 ### Integrações
 
-- n8n com três e-mails para o gestor: novo orçamento, instalações de amanhã e faturamento
-- Database Webhooks do Supabase como gatilho das automações
-- Deploy na Vercel ou na Netlify (`vercel.json` e `netlify.toml`)
+- n8n com três e-mails para o cliente do pedido: novo orçamento, instalações de amanhã e faturamento
+- Gatilho no Postgres (`notificar_n8n`) que chama os webhooks de produção do n8n
+- Deploy na Vercel (`vercel.json` reescreve as rotas para o `index.html`)
 
-## Demonstração
+## Acesso na Vercel
 
-<!-- Substitua os caminhos abaixo pelas capturas reais em docs/images/ -->
+A Vercel só publica o frontend. Ela não cria usuário e não guarda senha. O login é o Supabase Auth: a tela pede e-mail e senha, e o banco só libera as telas depois que a sessão existe.
 
-### Telas
+Abra https://temporary-racing-harp-4wy8unc.vercel.app e entre com:
 
-![Dashboard](docs/images/dashboard.png)
-![Pedidos](docs/images/pedidos.png)
-![Agenda](docs/images/agenda.png)
+- E-mail: `rafael@smartlar.dev`
+- Senha: `SmartLar-rafael-2026`
 
-### Fluxo em movimento
+Esse usuário já está em Authentication no projeto `cpnsbtrlagsqemldzcif`. Não há cadastro público. Para criar outro acesso, o caminho é o painel do Supabase, em Authentication > Users, e não as configurações da Vercel.
 
-<!-- GIF do fluxo de orçamento até a conclusão -->
-
-![Fluxo do pedido](docs/images/fluxo-pedido.gif)
-
-### Vídeo
-
-<!-- Cole aqui o link do vídeo de demonstração -->
-
-[Assistir à demonstração](#)
-
-### Aplicação no ar
-
-<!-- Cole aqui a URL do deploy -->
-
-[Abrir a SmartLar](#)
+Para publicar de novo, o build precisa das variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. A `service_role` fica só no n8n.
 
 ## Estrutura do projeto
 
@@ -116,7 +101,7 @@ src/
   types/              tipos globais, inclusive as variáveis de ambiente
 supabase/             migrations, seed e RLS
 n8n/                  workflows importáveis
-docs/                 entrega, roteiro de teste e imagens
+docs/                 entrega e roteiro de teste
 ```
 
 ### Regras de dependência
@@ -127,7 +112,7 @@ As dependências andam em uma direção só.
 - `features` usa `components`, `utils`, `hooks` e `services`.
 - `components/common` e `components/layout` usam `components/ui`.
 - `services` usa `config`.
-- Uma feature só importa outra pelo `index.ts` dela.
+- Uma feature importa de outra o arquivo que precisa: componente, hook, tipo ou serviço.
 
 ## Como executar o projeto
 
