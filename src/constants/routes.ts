@@ -8,5 +8,8 @@ export const routes = {
   pedidosFiltrados: (status: string) => `/pedidos?status=${status}`,
   novoPedido: '/pedidos/novo',
   pedido: (id: string) => `/pedidos/${id}`,
+  orcamento: (id: string) => `/pedidos/${id}/orcamento`,
   agenda: '/agenda',
+  relatorios: '/relatorios',
+  equipe: '/equipe',
 } as const

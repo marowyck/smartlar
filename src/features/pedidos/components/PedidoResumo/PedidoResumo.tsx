@@ -1,4 +1,8 @@
+import { Link } from 'react-router-dom'
 import type { PedidoDetalhe } from '@/features/pedidos/types'
+import { textoOrcamentoWhatsapp } from '@/features/pedidos/domain/orcamento'
+import { routes } from '@/constants/routes'
+import { linkWhatsapp } from '@/utils/contato'
 import { formatDataHora } from '@/utils/format'
 import { FORMAS_PAGAMENTO, labelFormaPagamento, type FormaPagamento } from '@/utils/money'
 import { Button } from '@/components/ui/button'
@@ -39,6 +43,35 @@ export function PedidoResumo({
             <p>{pedido.clientes.telefone}</p>
             <p>{pedido.clientes.email || 'Sem e-mail'}</p>
             <p className="break-words text-muted-foreground">{pedido.clientes.endereco}</p>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button type="button" variant="outline" size="sm" asChild>
+                <a
+                  href={linkWhatsapp(
+                    pedido.clientes.telefone,
+                    textoOrcamentoWhatsapp({
+                      numero: pedido.numero,
+                      clienteNome: pedido.clientes.nome,
+                      itens: pedido.itens_pedido.map((item) => ({
+                        quantidade: item.quantidade,
+                        nome: item.produtos?.nome ?? 'Produto',
+                        subtotal: item.subtotal,
+                      })),
+                      desconto: pedido.desconto,
+                      valorTotal: pedido.valor_total,
+                    }),
+                  )}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Enviar por WhatsApp
+                </a>
+              </Button>
+              <Button type="button" variant="outline" size="sm" asChild>
+                <Link to={routes.orcamento(pedido.id)} target="_blank">
+                  Imprimir orçamento
+                </Link>
+              </Button>
+            </div>
           </>
         ) : (
           <p>Cliente não encontrado</p>

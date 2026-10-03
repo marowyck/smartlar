@@ -8,13 +8,14 @@ import { mensagemErro } from '@/utils/errors'
 import { FORMAS_PAGAMENTO, formatBRL } from '@/utils/money'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
 export function NovoPedidoPassos({ clienteInicial, onCriado }: { clienteInicial?: string; onCriado: () => void }) {
   const fluxo = useNovoPedidoForm(clienteInicial, onCriado)
-  const { form, linhas, itens, clienteId, cliente, total, mutation } = fluxo
+  const { form, linhas, itens, clienteId, cliente, subtotal, desconto, total, mutation } = fluxo
 
   return (
     <>
@@ -76,6 +77,13 @@ export function NovoPedidoPassos({ clienteInicial, onCriado }: { clienteInicial?
             <Button type="button" variant="outline" onClick={() => linhas.append({ produto_id: '', quantidade: 1 })}>
               Adicionar produto
             </Button>
+            <div className="grid max-w-xs gap-1.5">
+              <Label htmlFor="desconto-novo">Desconto (R$)</Label>
+              <Input id="desconto-novo" type="number" step="0.01" min="0" {...form.register('desconto', { valueAsNumber: true })} />
+              {form.formState.errors.desconto ? (
+                <p className="text-xs text-destructive">{form.formState.errors.desconto.message}</p>
+              ) : null}
+            </div>
           </div>
         ) : null}
 
@@ -111,7 +119,14 @@ export function NovoPedidoPassos({ clienteInicial, onCriado }: { clienteInicial?
         ) : null}
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
-          <p className="text-lg font-semibold tabular-nums">{formatBRL(total)}</p>
+          <div className="text-sm">
+            {desconto > 0 ? (
+              <p className="text-muted-foreground">
+                Subtotal {formatBRL(subtotal)} − desconto {formatBRL(desconto)}
+              </p>
+            ) : null}
+            <p className="text-lg font-semibold tabular-nums">{formatBRL(total)}</p>
+          </div>
           <div className="flex gap-2">
             {fluxo.passo > 0 ? (
               <Button type="button" variant="outline" onClick={() => fluxo.setPasso((atual) => atual - 1)}>

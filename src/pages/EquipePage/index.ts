@@ -1,0 +1,1 @@
+export { EquipePage } from './EquipePage'

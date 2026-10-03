@@ -1,4 +1,4 @@
-import { CalendarDays, CirclePlus, ClipboardList, LayoutDashboard, Package, Users, type LucideIcon } from 'lucide-react'
+import { BarChart3, CalendarDays, CirclePlus, ClipboardList, HardHat, LayoutDashboard, Package, Users, type LucideIcon } from 'lucide-react'
 import { routes } from '@/constants/routes'
 
 export type NavItem = {
@@ -13,6 +13,8 @@ export const navPrincipal: NavItem[] = [
   { to: routes.clientes, label: 'Clientes', icon: Users },
   { to: routes.produtos, label: 'Produtos', icon: Package },
   { to: routes.agenda, label: 'Agenda', icon: CalendarDays },
+  { to: routes.equipe, label: 'Equipe', icon: HardHat },
+  { to: routes.relatorios, label: 'Relatórios', icon: BarChart3 },
 ]
 
 export const navInferior: NavItem[] = [
@@ -37,5 +39,7 @@ export function tituloDaRota(pathname: string) {
   if (pathname.startsWith(`${routes.pedidos}/`)) return 'Pedido'
   if (pathname.startsWith(routes.pedidos)) return 'Pedidos'
   if (pathname.startsWith(routes.agenda)) return 'Agenda'
+  if (pathname.startsWith(routes.equipe)) return 'Equipe'
+  if (pathname.startsWith(routes.relatorios)) return 'Relatórios'
   return 'SmartLar'
 }

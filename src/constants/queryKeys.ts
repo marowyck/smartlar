@@ -23,8 +23,17 @@ export const queryKeys = {
     kpis: ['dashboard', 'kpis'] as const,
     proximas: ['dashboard', 'proximas'] as const,
   },
+  relatorios: {
+    all: ['relatorios'] as const,
+    faturamento: ['relatorios', 'faturamento'] as const,
+    status: ['relatorios', 'status'] as const,
+    produtos: ['relatorios', 'produtos'] as const,
+    equipe: ['relatorios', 'equipe'] as const,
+    conversao: ['relatorios', 'conversao'] as const,
+  },
   agenda: {
     all: ['agenda'] as const,
+    aberta: ['agenda', 'aberta'] as const,
     tecnico: (id: string) => ['agenda', id] as const,
   },
 }

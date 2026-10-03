@@ -1,6 +1,7 @@
 import { EmptyState } from '@/components/common/EmptyState'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import type { PedidoResumo } from '@/features/pedidos/types'
+import { diasDesde, rotuloDias } from '@/utils/format'
 import { formatBRL, numeroPedido } from '@/utils/money'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -35,7 +36,9 @@ export function OrcamentosParados({
                     <p className="font-medium">
                       {numeroPedido(pedido.numero)} · {pedido.cliente_nome}
                     </p>
-                    <p className="text-sm text-muted-foreground">{pedido.cliente_telefone}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {pedido.cliente_telefone} · {rotuloDias(diasDesde(pedido.created_at))}
+                    </p>
                     <p className="mt-1 font-semibold tabular-nums">{formatBRL(pedido.valor_total)}</p>
                   </button>
                   <Button disabled={aprovando} onClick={() => onAprovar(pedido.id)}>

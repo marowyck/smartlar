@@ -13,6 +13,9 @@ const ClientesPage = lazy(() => import('@/pages/ClientesPage').then((m) => ({ de
 const ProdutosPage = lazy(() => import('@/pages/ProdutosPage').then((m) => ({ default: m.ProdutosPage })))
 const PedidosPage = lazy(() => import('@/pages/PedidosPage').then((m) => ({ default: m.PedidosPage })))
 const AgendaPage = lazy(() => import('@/pages/AgendaPage').then((m) => ({ default: m.AgendaPage })))
+const EquipePage = lazy(() => import('@/pages/EquipePage').then((m) => ({ default: m.EquipePage })))
+const RelatoriosPage = lazy(() => import('@/pages/RelatoriosPage').then((m) => ({ default: m.RelatoriosPage })))
+const OrcamentoPage = lazy(() => import('@/pages/OrcamentoPage').then((m) => ({ default: m.OrcamentoPage })))
 
 function Fallback() {
   return (
@@ -29,6 +32,7 @@ export function AppRoutes() {
       <Routes>
         <Route path={routes.login} element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
+          <Route path="pedidos/:id/orcamento" element={<OrcamentoPage />} />
           <Route element={<AppLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path={routes.clientes.slice(1)} element={<ClientesPage />} />
@@ -38,6 +42,8 @@ export function AppRoutes() {
             <Route path={routes.pedidos.slice(1)} element={<PedidosPage />} />
             <Route path="pedidos/:id" element={<RedirecionarPedido />} />
             <Route path={routes.agenda.slice(1)} element={<AgendaPage />} />
+            <Route path={routes.equipe.slice(1)} element={<EquipePage />} />
+            <Route path={routes.relatorios.slice(1)} element={<RelatoriosPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to={routes.home} replace />} />

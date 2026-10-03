@@ -6,8 +6,10 @@ export function linkTelefone(telefone: string) {
   return `tel:${apenasDigitos(telefone)}`
 }
 
-export function linkWhatsapp(telefone: string) {
+export function linkWhatsapp(telefone: string, texto?: string) {
   const digitos = apenasDigitos(telefone)
   const comPais = digitos.startsWith('55') ? digitos : `55${digitos}`
-  return `https://wa.me/${comPais}`
+  const base = `https://wa.me/${comPais}`
+  if (!texto) return base
+  return `${base}?text=${encodeURIComponent(texto)}`
 }

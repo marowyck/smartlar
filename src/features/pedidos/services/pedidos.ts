@@ -54,6 +54,7 @@ export async function criarPedido(input: NovoPedidoInput): Promise<string> {
     p_cliente_id: input.cliente_id,
     p_observacoes: input.observacoes.trim() || null,
     p_forma_pagamento: input.forma_pagamento,
+    p_desconto: input.desconto,
     p_itens: input.itens,
   })
   return garantir(data as string | null, error)

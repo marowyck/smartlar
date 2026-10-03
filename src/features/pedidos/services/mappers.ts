@@ -14,6 +14,7 @@ export function mapResumo(row: PedidoResumo): PedidoResumo {
     ...row,
     numero: toNumber(row.numero),
     valor_total: toNumber(row.valor_total),
+    desconto: toNumber(row.desconto),
     forma_pagamento: isFormaPagamento(row.forma_pagamento) ? row.forma_pagamento : null,
     status: row.status,
   }
@@ -48,6 +49,7 @@ export function mapPedido(row: LinhaPedido): PedidoDetalhe {
     ...row,
     numero: toNumber(row.numero),
     valor_total: toNumber(row.valor_total),
+    desconto: toNumber(row.desconto),
     forma_pagamento: isFormaPagamento(row.forma_pagamento) ? row.forma_pagamento : null,
     clientes: um(row.clientes),
     tecnicos: um(row.tecnicos),

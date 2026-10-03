@@ -1,0 +1,1 @@
+export { GraficoFaturamento } from './GraficoFaturamento'

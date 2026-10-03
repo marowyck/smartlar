@@ -12,3 +12,9 @@ export function calcularTotal(
   }, 0)
   return centavos / 100
 }
+
+export function aplicarDesconto(subtotal: number, desconto: number): number {
+  const abatimento = Number.isFinite(desconto) ? desconto : 0
+  const centavos = Math.round(subtotal * 100) - Math.round(abatimento * 100)
+  return Math.max(0, centavos) / 100
+}

@@ -1,0 +1,130 @@
+{
+  "name": "SmartLar — 4. Lembrete de orçamento parado",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "c1c2c3d4-4444-4444-8444-444444444401",
+      "name": "Todo dia as 9h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';\nconst SERVICE_ROLE = 'COLE_A_SERVICE_ROLE_AQUI';\n\nreturn [{\n  json: {\n    supabase_url: String(SUPABASE_URL).replace(/\\/$/, ''),\n    service_role: SERVICE_ROLE,\n  },\n}];"
+      },
+      "id": "c1c2c3d4-4444-4444-8444-444444444402",
+      "name": "Configuracao",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.supabase_url }}/rest/v1/rpc/orcamentos_parados",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $json.service_role }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $json.service_role }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Accept", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"p_dias\": 3 }",
+        "options": {}
+      },
+      "id": "c1c2c3d4-4444-4444-8444-444444444403",
+      "name": "Consultar parados",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "function reais(valor) {\n  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor) || 0);\n}\nfunction numeroPedido(numero) {\n  return '#' + String(numero).padStart(3, '0');\n}\n\nconst linhas = [];\nfor (const item of $input.all()) {\n  const json = item.json;\n  if (Array.isArray(json)) linhas.push(...json);\n  else if (json && json.pedido_id) linhas.push(json);\n}\nif (linhas.length === 0) return [];\n\nconst semEmail = linhas.filter((item) => !String(item.cliente_email || '').trim());\nif (semEmail.length > 0) {\n  const nomes = semEmail.map((item) => item.cliente_nome || 'cliente sem nome').join(', ');\n  throw new Error('Sem e-mail cadastrado para: ' + nomes);\n}\n\nconst porEmail = new Map();\nfor (const item of linhas) {\n  const email = String(item.cliente_email).trim();\n  const grupo = porEmail.get(email) || [];\n  grupo.push(item);\n  porEmail.set(email, grupo);\n}\n\nreturn [...porEmail.entries()].map(([email, itens]) => {\n  const cliente = itens[0].cliente_nome || 'cliente';\n  const blocos = itens.map((item) => [\n    numeroPedido(item.numero),\n    'Valor: ' + reais(item.valor_total),\n    'Parado há ' + item.dias_parado + ' dias',\n  ].join('\\n'));\n  const quantidade = itens.length;\n  const assunto = quantidade === 1\n    ? 'Orçamento ' + numeroPedido(itens[0].numero) + ' ainda está em aberto'\n    : quantidade + ' orçamentos ainda estão em aberto';\n  return {\n    json: {\n      para: email,\n      assunto,\n      corpo: [\n        'Olá, ' + cliente + '.',\n        '',\n        'Estes orçamentos da SmartLar ainda aguardam a sua resposta:',\n        '',\n        blocos.join('\\n\\n'),\n      ].join('\\n'),\n    },\n  };\n});"
+      },
+      "id": "c1c2c3d4-4444-4444-8444-444444444404",
+      "name": "Montar lembrete",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.para }}",
+        "subject": "={{ $json.assunto }}",
+        "emailType": "text",
+        "message": "={{ $json.corpo }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c1c2c3d4-4444-4444-8444-444444444405",
+      "name": "Enviar e-mail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1120, 300],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const item = $input.first().json;\nconst mensagem = (item && item.error && item.error.message) || item.message || JSON.stringify(item);\nthrow new Error(\"Automação 4 não enviou o lembrete de orçamento parado: \" + mensagem);"
+      },
+      "id": "c1c2c3d4-4444-4444-8444-444444444406",
+      "name": "Registrar falha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 500]
+    }
+  ],
+  "connections": {
+    "Todo dia as 9h": {
+      "main": [[{ "node": "Configuracao", "type": "main", "index": 0 }]]
+    },
+    "Configuracao": {
+      "main": [[{ "node": "Consultar parados", "type": "main", "index": 0 }]]
+    },
+    "Consultar parados": {
+      "main": [
+        [{ "node": "Montar lembrete", "type": "main", "index": 0 }],
+        [{ "node": "Registrar falha", "type": "main", "index": 0 }]
+      ]
+    },
+    "Montar lembrete": {
+      "main": [[{ "node": "Enviar e-mail", "type": "main", "index": 0 }]]
+    },
+    "Enviar e-mail": {
+      "main": [
+        [],
+        [{ "node": "Registrar falha", "type": "main", "index": 0 }]
+      ]
+    }
+  }
+}

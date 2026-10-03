@@ -3,6 +3,15 @@ import type { PedidoResumo } from '@/features/pedidos/types'
 import { garantir } from '@/utils/result'
 import { getSupabase } from '@/services/supabase'
 
+export async function listarAgendaAberta(): Promise<PedidoResumo[]> {
+  const { data, error } = await getSupabase()
+    .from('vw_pedidos_resumo')
+    .select('*')
+    .in('status', ['agendado', 'em_andamento'])
+    .order('data_instalacao')
+  return (garantir(data, error) as PedidoResumo[]).map(mapResumo)
+}
+
 export async function listarAgenda(tecnicoId: string): Promise<PedidoResumo[]> {
   const { data, error } = await getSupabase()
     .from('vw_pedidos_resumo')

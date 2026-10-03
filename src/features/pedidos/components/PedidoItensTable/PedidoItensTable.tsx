@@ -1,4 +1,4 @@
-import { calcularTotal } from '@/features/pedidos/domain/calculos'
+import { aplicarDesconto, calcularTotal } from '@/features/pedidos/domain/calculos'
 import type { PedidoDetalhe } from '@/features/pedidos/types'
 import { formatBRL } from '@/utils/money'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -34,6 +34,18 @@ export function PedidoItensTable({ pedido }: { pedido: PedidoDetalhe }) {
             ))}
           </TableBody>
           <TableFooter>
+            {pedido.desconto > 0 ? (
+              <>
+                <TableRow>
+                  <TableCell colSpan={3}>Subtotal</TableCell>
+                  <TableCell className="tabular-nums">{formatBRL(somaItens)}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={3}>Desconto</TableCell>
+                  <TableCell className="tabular-nums">{formatBRL(pedido.desconto)}</TableCell>
+                </TableRow>
+              </>
+            ) : null}
             <TableRow>
               <TableCell colSpan={3}>Total</TableCell>
               <TableCell className="tabular-nums">{formatBRL(pedido.valor_total)}</TableCell>
@@ -41,7 +53,7 @@ export function PedidoItensTable({ pedido }: { pedido: PedidoDetalhe }) {
           </TableFooter>
         </Table>
       </div>
-      {Math.abs(somaItens - pedido.valor_total) > 0.009 ? (
+      {Math.abs(aplicarDesconto(somaItens, pedido.desconto) - pedido.valor_total) > 0.009 ? (
         <p className="text-sm text-destructive">A soma dos itens ({formatBRL(somaItens)}) não bate com o total salvo.</p>
       ) : null}
     </div>

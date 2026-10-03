@@ -9,6 +9,8 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { routes } from '@/constants/routes'
 import { KpiCard } from '@/features/dashboard/components/KpiCard'
+import { GraficoFaturamento } from '@/features/relatorios/components/GraficoFaturamento'
+import { useFaturamentoMensal } from '@/features/relatorios/hooks/useRelatorios'
 import { OrcamentosParados } from '@/features/dashboard/components/OrcamentosParados'
 import { ProximasInstalacoes } from '@/features/dashboard/components/ProximasInstalacoes'
 import { useKpis, useOrcamentosParados, useProximasInstalacoes } from '@/features/dashboard/hooks/useDashboard'
@@ -17,12 +19,14 @@ import { useInvalidateOperacao } from '@/hooks/useInvalidateOperacao'
 import { usePainel } from '@/store/painel-context'
 import { mensagemErro } from '@/utils/errors'
 import { formatBRL } from '@/utils/money'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function DashboardPage() {
   const { abrirPedido } = usePainel()
   const kpis = useKpis()
   const proximas = useProximasInstalacoes()
   const orcamentos = useOrcamentosParados()
+  const faturamento = useFaturamentoMensal()
   const invalidar = useInvalidateOperacao()
   const aprovar = useMutation({
     mutationFn: (id: string) => atualizarPedido(id, { status: 'aprovado' }),
@@ -48,6 +52,16 @@ export function DashboardPage() {
           </div>
         ) : null}
       </QueryBoundary>
+      <Card>
+        <CardHeader>
+          <CardTitle>Faturamento dos últimos 6 meses</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <QueryBoundary isLoading={faturamento.isLoading} error={faturamento.error} onRetry={() => void faturamento.refetch()}>
+            <GraficoFaturamento dados={faturamento.data ?? []} altura={220} />
+          </QueryBoundary>
+        </CardContent>
+      </Card>
       <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
         <ProximasInstalacoes
           instalacoes={proximas.data ?? []}

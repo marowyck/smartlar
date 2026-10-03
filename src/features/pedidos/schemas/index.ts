@@ -5,6 +5,7 @@ export const pedidoSchema = z
     cliente_id: z.string().uuid('Selecione um cliente'),
     observacoes: z.string(),
     forma_pagamento: z.string(),
+    desconto: z.number().min(0, 'Desconto não pode ser negativo'),
     itens: z
       .array(
         z.object({

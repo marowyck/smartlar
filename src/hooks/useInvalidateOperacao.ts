@@ -9,6 +9,7 @@ export function useInvalidateOperacao() {
       queryClient.invalidateQueries({ queryKey: queryKeys.pedidos.all }),
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all }),
       queryClient.invalidateQueries({ queryKey: queryKeys.agenda.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.relatorios.all }),
     ])
   }
 }

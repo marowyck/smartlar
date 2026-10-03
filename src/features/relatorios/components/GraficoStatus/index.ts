@@ -1,0 +1,1 @@
+export { GraficoStatus } from './GraficoStatus'

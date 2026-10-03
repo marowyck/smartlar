@@ -66,9 +66,9 @@ export function PedidoDialog({ id, modo, aberto, onOpenChange, onModo, onAbrirCl
               <StatusTimeline status={dados.status} />
               {editando && dados.status === 'orcamento' ? (
                 <PedidoItensEditor
-                  key={dados.itens_pedido
+                  key={`${dados.desconto}|${dados.itens_pedido
                     .map((item) => `${item.id}:${item.produto_id}:${item.quantidade}:${item.preco_unitario}`)
-                    .join('|')}
+                    .join('|')}`}
                   pedido={dados}
                 />
               ) : (

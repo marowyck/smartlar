@@ -11,6 +11,7 @@ export type Pedido = {
   status: StatusPedido
   data_instalacao: string | null
   valor_total: number
+  desconto: number
   forma_pagamento: FormaPagamento | null
   observacoes: string | null
   created_at: string
@@ -26,6 +27,7 @@ export type PedidoResumo = {
   status: StatusPedido
   data_instalacao: string | null
   valor_total: number
+  desconto: number
   forma_pagamento: FormaPagamento | null
   observacoes: string | null
   created_at: string
@@ -62,6 +64,7 @@ export type NovoPedidoInput = {
   cliente_id: string
   observacoes: string
   forma_pagamento: FormaPagamento | null
+  desconto: number
   itens: { produto_id: string; quantidade: number }[]
 }
 
@@ -71,4 +74,5 @@ export type AtualizarPedidoInput = {
   data_instalacao?: string
   forma_pagamento?: FormaPagamento | null
   observacoes?: string | null
+  desconto?: number
 }

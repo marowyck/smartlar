@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns'
+import { differenceInCalendarDays, format, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 export function formatDataHora(iso: string | null | undefined): string {
@@ -19,4 +19,15 @@ export function chaveDia(data: Date): string {
 
 export function diaLocal(iso: string): string {
   return chaveDia(parseISO(iso))
+}
+
+export function diasDesde(iso: string | null | undefined): number {
+  if (!iso) return 0
+  return Math.max(0, differenceInCalendarDays(new Date(), parseISO(iso)))
+}
+
+export function rotuloDias(dias: number): string {
+  if (dias <= 0) return 'Hoje'
+  if (dias === 1) return 'Há 1 dia'
+  return `Há ${dias} dias`
 }

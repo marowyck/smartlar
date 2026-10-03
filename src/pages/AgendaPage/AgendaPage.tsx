@@ -1,3 +1,5 @@
+import { addWeeks, format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -6,21 +8,27 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { QueryBoundary } from '@/components/common/QueryBoundary'
 import { AgendaDia } from '@/features/agenda/components/AgendaDia'
 import { AgendaCalendario, AgendaFiltros } from '@/features/agenda/components/AgendaFiltros'
-import { useAgenda, useAtualizarAgenda } from '@/features/agenda/hooks/useAgenda'
+import { AgendaSemana } from '@/features/agenda/components/AgendaSemana'
+import { inicioDaSemana } from '@/features/agenda/utils/semana'
+import { useAgenda, useAgendaAberta, useAtualizarAgenda } from '@/features/agenda/hooks/useAgenda'
 import { useTecnicos } from '@/features/agenda/hooks/useTecnicos'
 import { agruparPorDia } from '@/features/agenda/utils/agruparPorDia'
 import { usePainel } from '@/store/painel-context'
 import { mensagemErro } from '@/utils/errors'
+import { Button } from '@/components/ui/button'
 import { chaveDia, diaLocal } from '@/utils/format'
 
 export function AgendaPage() {
   const { abrirPedido } = usePainel()
   const tecnicos = useTecnicos()
+  const [visao, setVisao] = useState<'tecnico' | 'semana'>('tecnico')
+  const [semana, setSemana] = useState(() => inicioDaSemana(new Date()))
   const [tecnicoId, setTecnicoId] = useState('')
   const [dia, setDia] = useState<Date | undefined>()
   const [calendarioAberto, setCalendarioAberto] = useState(false)
   const tecnicoSelecionado = tecnicoId || tecnicos.data?.[0]?.id || ''
   const agenda = useAgenda(tecnicoSelecionado)
+  const aberta = useAgendaAberta()
   const atualizar = useAtualizarAgenda()
   const instalacoes = agenda.data ?? []
   const filtradas = instalacoes.filter((item) => {
@@ -45,6 +53,48 @@ export function AgendaPage() {
   return (
     <PageContainer>
       <PageHeader title="Agenda dos técnicos" description="Lucas e Pedro veem as instalações deles e avançam o status daqui." />
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" variant={visao === 'tecnico' ? 'default' : 'outline'} onClick={() => setVisao('tecnico')}>
+          Por técnico
+        </Button>
+        <Button type="button" variant={visao === 'semana' ? 'default' : 'outline'} onClick={() => setVisao('semana')}>
+          Semana toda
+        </Button>
+        {visao === 'semana' ? (
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" onClick={() => setSemana((atual) => addWeeks(atual, -1))}>
+              Semana anterior
+            </Button>
+            <span className="text-sm capitalize text-muted-foreground">
+              {format(semana, "dd 'de' MMMM", { locale: ptBR })}
+            </span>
+            <Button type="button" variant="outline" onClick={() => setSemana((atual) => addWeeks(atual, 1))}>
+              Próxima semana
+            </Button>
+          </div>
+        ) : null}
+      </div>
+      {visao === 'semana' ? (
+        <QueryBoundary
+          isLoading={aberta.isLoading || tecnicos.isLoading}
+          error={aberta.error ?? tecnicos.error}
+          onRetry={() => {
+            void aberta.refetch()
+            void tecnicos.refetch()
+          }}
+        >
+          <AgendaSemana
+            inicio={semana}
+            tecnicos={tecnicos.data ?? []}
+            itens={aberta.data ?? []}
+            pendente={atualizar.isPending}
+            onAbrir={(id) => abrirPedido(id, 'ver')}
+            onMudarStatus={mudarStatus}
+          />
+        </QueryBoundary>
+      ) : null}
+      {visao === 'tecnico' ? (
+      <>
       <AgendaFiltros
         tecnicos={tecnicos.data ?? []}
         tecnicoSelecionado={tecnicoSelecionado}
@@ -87,6 +137,8 @@ export function AgendaPage() {
           )}
         </QueryBoundary>
       </div>
+      </>
+      ) : null}
     </PageContainer>
   )
 }
